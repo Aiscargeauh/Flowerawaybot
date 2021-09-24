@@ -1,0 +1,12 @@
+aiohttp
+asyncio
+discord.py
+pyyaml
+tinydb
+python-dateutil
+emojis
+humanize
+tweepy
+requests
+nums_from_string
+multiprocess
