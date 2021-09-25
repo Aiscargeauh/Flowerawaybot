@@ -220,7 +220,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Sent a new list embed and removed old one, saved in DB")
 
         #Restart worker?
-        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_list_time_left_update(context, message_id, ongoing_giveaways))
+        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_list_time_left_update(context, message_id))
         self.logger.info(f"Started task about updating time left in list")
         return
 
@@ -235,18 +235,22 @@ class giveaway(commands.Cog, name="Giveaway"):
         #Check if it's for a specific user
         user_mentioned_list = context.message.mentions
         if len(user_mentioned_list) > 0:
-            selected_giveaways = giveaway_database_helpers.get_giveaways_by_user(user_mentioned_list[0].id)
+            self.logger.info(f"Starting stats for user {user_mentioned_list[0].display_name}")
+            selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
             stats_results = giveaway_helpers.format_user_stats(selected_giveaways, user_mentioned_list[0].id)
             await giveaway_helpers.print_user_stats_results(context, stats_results, user_mentioned_list[0])
         else:
+            self.logger.info(f"Starting general stats")
             selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
             stats_results = giveaway_helpers.format_general_stats(selected_giveaways)
             message_id = await giveaway_helpers.print_stats_results(context, stats_results)
         
             #Remove old list
+            self.logger.info(f"Removing old stats message")
             await helpers.giveaway_helpers.remove_old_stats_message(context)
 
             #Save new message id
+            self.logger.info(f"Saving new stats message id")
             helpers.giveaway_database_helpers.set_latest_stats_message_id(message_id)
 
         return

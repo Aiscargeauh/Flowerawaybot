@@ -64,8 +64,12 @@ def get_giveaways_by_user(user_id):
     giveaway_db.clear_cache()
     giveaway_query = Query()
     try:
-        return giveaway_db.search(giveaway_query["author"] == user_id or user_id in giveaway_query["participants"] or giveaway_query["winner"] == user_id)
-    except:
+        return giveaway_db.search(\
+            (giveaway_query["author"] == user_id) | \
+            (user_id in giveaway_query["participants"]) | \
+            (giveaway_query["winner"] == user_id) | \
+            (giveaway_query["reroll"][-1]["winner"] == user_id))
+    except Exception as e:
         return None
 
 def get_giveaway_by_message_id(message_id):

@@ -131,6 +131,8 @@ def format_general_stats(giveaways):
     giveaways_result = {
         "count": 0,
         "total_rarity": 0,
+        "count_rerolled": 0,
+        "count_aborted": 0,
         "winners": {},
         "authors": {},
         "emojis": {}
@@ -139,10 +141,11 @@ def format_general_stats(giveaways):
     for giveaway in giveaways:
         giveaways_result["count"] = giveaways_result["count"] + 1
         giveaways_result["total_rarity"] = giveaways_result["total_rarity"] + giveaway["flower_rarity"]
-        if giveaways_result["winners"].get(giveaway["winner"]):
+        if giveaways_result["winners"].get(giveaway["winner"]) and len(giveaway["rerolls"]) == 0:
             giveaways_result["winners"][giveaway["winner"]] = giveaways_result["winners"][giveaway["winner"]] + 1
         else:
-            giveaways_result["winners"][giveaway["winner"]] = 1
+            if len(giveaway["rerolls"]) == 0:
+                giveaways_result["winners"][giveaway["winner"]] = 1
 
         if giveaways_result["authors"].get(giveaway["author"]):
             giveaways_result["authors"][giveaway["author"]] = giveaways_result["authors"][giveaway["author"]] + 1
@@ -154,11 +157,20 @@ def format_general_stats(giveaways):
         else:
             giveaways_result["emojis"][giveaway["reaction"]] = 1
 
+        if len(giveaway["rerolls"]) > 0:
+            giveaways_result["count_rerolled"] += 1
+            if giveaways_result["winners"].get(giveaway["rerolls"][-1]["winner"]):
+                giveaways_result["winners"][giveaway["rerolls"][-1]["winner"]] = giveaways_result["winners"][giveaway["rerolls"][-1]["winner"]] + 1
+            else:
+                giveaways_result["winners"][giveaway["rerolls"][-1]["winner"]] = 1
+        if giveaway["status"] == "ABORTED":
+            giveaways_result["count_aborted"] += 1
+
     sorted_winners = dict(sorted(giveaways_result["winners"].items(), key=lambda item: item[1], reverse=True))
     sorted_authors = dict(sorted(giveaways_result["authors"].items(), key=lambda item: item[1], reverse=True))
     sorted_emojis = dict(sorted(giveaways_result["emojis"].items(), key=lambda item: item[1], reverse=True))
 
-    return {"winners": sorted_winners, "authors": sorted_authors, "emojis": sorted_emojis, "total": giveaways_result["count"], "total_rarity": giveaways_result["total_rarity"]}
+    return {"winners": sorted_winners, "authors": sorted_authors, "emojis": sorted_emojis, "total": giveaways_result["count"], "total_rarity": giveaways_result["total_rarity"], "count_aborted": giveaways_result["count_aborted"], "count_rerolled": giveaways_result["count_rerolled"]}
 
 def format_user_stats(giveaways, user_id):
     stats_result = {
@@ -171,9 +183,14 @@ def format_user_stats(giveaways, user_id):
     }
 
     for giveaway in giveaways:
-        if giveaway["winner"] == user_id:
+
+        #Tricky one: if user_id is the winner and there is no reroll, add
+        # or (second line) if there is rerolls, take the last one and if our user is the winner, add
+        if (len(giveaway["rerolls"]) == 0 and giveaway["winner"] == user_id) \
+            or (len(giveaway["rerolls"]) > 0 and giveaway["rerolls"][-1]["winner"] == user_id):
             stats_result["winning_count"] += 1
             stats_result["winning_rarity_count"] += giveaway["flower_rarity"]
+
         if giveaway["author"] == user_id:
             stats_result["giving_count"] += 1
             stats_result["giving_rarity_count"] += giveaway["flower_rarity"]
@@ -181,6 +198,7 @@ def format_user_stats(giveaways, user_id):
                 stats_result["emojis"][giveaway["reaction"]] += 1
             else:
                 stats_result["emojis"][giveaway["reaction"]] = 1
+
         if user_id in giveaway["participants"]:
             stats_result["participation_count"] += 1
 
@@ -200,7 +218,7 @@ async def print_user_stats_results(context, stats_results, user):
 
 async def print_stats_results(context, stats_results):
     embed = discord.Embed()
-    embed.add_field(name="Informations", value=f"A total of **{stats_results['total']} giveaways** have been made so far\nThat is **{stats_results['total_rarity']} rarity** given away")
+    embed.add_field(name="Informations", value=f"A total of **{stats_results['total']} giveaways** have been made so far\nThat is **{stats_results['total_rarity']} rarity** given away\n **{stats_results['count_aborted']}** have been aborted, and **{stats_results['count_rerolled']}** have been rerolled")
     winners_text = await get_winners_text(context, stats_results["winners"])
     authors_text = await get_authors_text(context, stats_results["authors"])
     emojis_text = get_emojis_text(stats_results["emojis"])
@@ -362,10 +380,15 @@ async def update_time_left_on_list_message(context, message_id, ongoing_giveaway
 
     results = await asyncio.gather(*[get_giveaway_embed(context, giveaway) for giveaway in ongoing_giveaways])
     if old_embed != 0:
-        field_iterator = 0
-        for f in results:
-            old_embed.embeds[0].set_field_at(field_iterator, name=f"{f[0]}", value=f"{f[1]}", inline=False)
-            field_iterator += 1
+        if len(old_embed.embeds[0].fields) != len(ongoing_giveaways):
+            old_embed.embeds[0].clear_fields()
+            for f in results:
+                old_embed.embeds[0].add_field(name=f[0], value=f[1], inline=False)
+        else:
+            field_iterator = 0
+            for f in results:
+                old_embed.embeds[0].set_field_at(field_iterator, name=f"{f[0]}", value=f"{f[1]}", inline=False)
+                field_iterator += 1
         await old_embed.edit(embed = old_embed.embeds[0])
 
     return

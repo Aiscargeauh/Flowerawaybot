@@ -116,10 +116,10 @@ async def on_message(message):
 
     if "flowers are not securities" in message.content.lower():
         await message.add_reaction(emoji="👍")
-        return
+        
     if "flowers are securities" in message.content.lower():
         await message.add_reaction(emoji="👎")
-        return
+        
 
     # Ignores if a command is being executed by a blacklisted user
     with open("config.yaml") as file:

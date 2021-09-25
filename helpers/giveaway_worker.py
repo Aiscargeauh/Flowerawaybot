@@ -20,7 +20,7 @@ async def threaded_time_left_update(context, message_id, message_url, end_time, 
             await helpers.giveaway_helpers.notify_user_giveaway_end_as_text(context, first_message_id, author)
             logger.info(f"End time has been met, notified author")
 
-async def threaded_list_time_left_update(context, list_message_id, ongoing_giveaways):
+async def threaded_list_time_left_update(context, list_message_id):
     message_exists = True
     logger = logging.getLogger("GiveawayLogger")
     while message_exists:
@@ -31,6 +31,7 @@ async def threaded_list_time_left_update(context, list_message_id, ongoing_givea
         except:
             return
         if message_exists:
+            ongoing_giveaways = helpers.giveaway_database_helpers.get_ongoing_giveaways()
             await helpers.giveaway_helpers.update_time_left_on_list_message(context, list_message_id, ongoing_giveaways)
             logger.info(f"Updated time left on list message")
         else:
