@@ -1,6 +1,5 @@
 # Giveaway bot Flowerpatch
-This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)'s [discord](discord.gg/flowerpatch).
-Uses (discord.py)[https://discordpy.readthedocs.io/] to 
+This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)'s [discord](discord.gg/flowerpatch). Uses [discord.py](discordpy.readthedocs.io/) to interact with discord and [tweepy](https://docs.tweepy.org/en/stable/) to interact with twitter. Database is made in [TinyDB](https://tinydb.readthedocs.io/en/latest/), all json.
 
 ---
 ## How to contribute (running code on host)
