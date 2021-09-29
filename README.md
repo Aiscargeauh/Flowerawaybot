@@ -1,6 +1,8 @@
 # Giveaway bot Flowerpatch
 This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)'s [discord](discord.gg/flowerpatch).
+Uses (discord.py)[https://discordpy.readthedocs.io/] to 
 
+---
 ## How to contribute (running code on host)
 1. Clone this repository
 2. Create your own branch: `git checkout -b my_branch_name` 
@@ -43,6 +45,8 @@ services:
 7. Implement and commit your changes
 8. Push your branch to github and and create a [pull-request](https://github.com/Aiscargeauh/Flowerawaybot/pulls)
 
+---
+
 ## Steps to production (from old version to this public repo - september 2021)
 
 Note the server and bot tokens are private and maintained by Aiscargeauh#0954
@@ -56,6 +60,8 @@ Note the server and bot tokens are private and maintained by Aiscargeauh#0954
 8. Update giveaways.json to the giveaways_converted.json
 9. Restart the new bot
 10. All rolling! !giveaway stats should be interesting
+
+---
 
 ## Changelog 
 
