@@ -3,7 +3,8 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
 
 ## How to contribute (running code on host)
 1. Clone this repository
-2. Set new environment variables in your operating system:
+2. Create your own branch: `git checkout -b my_branch_name` 
+3. Set new environment variables in your operating system:
     - `discord_token`
     - `twitter_access_token`
     - `twitter_access_token_secret`
@@ -11,9 +12,10 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
     - `twitter_api_secret`
     - Discord token can be found on [discord dev portal](https://discord.com/developers/applications)
     - Twitter tokens can be found on [twitter dev portal](https://developer.twitter.com/en/portal/dashboard) (yes, there are 4 tokens just to push a tweet...)
-3. Check that the environment is "Dev" in config.yaml
-4. Run bot.py with python3
-5. 
+4. Check that the environment is "Dev" in config.yaml
+5. Run bot.py with python3
+6. Implement and commit your changes
+7. Push your branch to github and and create a [pull-request](https://github.com/Aiscargeauh/Flowerawaybot/pulls)
 
 ## How to contribute (running code on docker)
 1. Clone this repository
@@ -36,6 +38,10 @@ services:
             twitter_api_key: 
             twitter_api_secret: 
 ```
+5. Check that the environment is "Dev" in config.yaml
+6. Run bot.py with python3
+7. Implement and commit your changes
+8. Push your branch to github and and create a [pull-request](https://github.com/Aiscargeauh/Flowerawaybot/pulls)
 
 ## Steps to production (from old version to this public repo - september 2021)
 
