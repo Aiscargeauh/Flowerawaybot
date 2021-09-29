@@ -330,7 +330,10 @@ class giveaway(commands.Cog, name="Giveaway"):
             "Hm no it is not worth it...<:pepeohno:754892181709520906>",
             "You really thought that would work? <:smughonk:665037775481077770>",
             "That command is taboo... <:pepealpha:570230833198399489>",
-            "Try again when I finished my smoke break <:pepestoner:720807661745995877>"
+            "Try again when I finished my smoke break <:pepestoner:720807661745995877>",
+            "Herbert said no! <:koalasad:755306633973727323>",
+            "Sorry gaissa is already registered as future winner <:pepeultrasad:743232149632712805>",
+            "<:hidethepain:720807661918093402>"
         ]
         await context.message.reply(f"{random.choice(possibilities)}")
         self.logging.info("Sent a funny answer to !giveaway win")

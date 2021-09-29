@@ -51,15 +51,15 @@
      - `!purge giveaways` -> /!\ Removes all giveaways in database (yep, everything)
      - `!blacklist add @user` or `!blacklist remove @user` to prevent someone from using the bot or authorize the user again
      - `!owner add @user` or `!owner remove @user` to add someone to the owners list (and give user rights to override commands / use the ones listed above)
- - TODO: Old giveaway database has been restructured to keep history
+ - Old giveaway database has been restructured to keep history
  - More logging on each command
    - Better understanding of history
    - Daily rolling file
- - TODO: Tokens are now environment variables
+ - Tokens are now environment variables
    - **Make the project open-source!**
 
 
 ## Notes
 
-- Only `!giveaway` commands and subcommands have prefixes
+- Only `!giveaway` commands and subcommands have aliases
 - Bot will not react at all when a blacklisted user is posting a message

@@ -6,6 +6,11 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY . .
-COPY ./DB/emoji_map.json ./DB
+
+#ENV discord_token=
+#ENV twitter_access_token=
+#ENV twitter_access_token_secret=
+#ENV twitter_api_key=
+#ENV twitter_api_key_secret=
 
 CMD [ "python3", "-u", "bot.py"]
