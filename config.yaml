@@ -2,7 +2,7 @@ blacklist:
 - 0
 bot_prefix: '!'
 bot_version: 1.0
-environment: Dev
+environment: Prod
 owners:
 - 414834795076517889
 - 178912012426936320

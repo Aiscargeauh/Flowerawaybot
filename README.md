@@ -1,5 +1,14 @@
 # Giveaway bot Flowerpatch
+
+
 This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)'s [discord](discord.gg/flowerpatch). Uses [discord.py](discordpy.readthedocs.io/) to interact with discord and [tweepy](https://docs.tweepy.org/en/stable/) to interact with twitter. Database is made in [TinyDB](https://tinydb.readthedocs.io/en/latest/), all json.
+
+---
+
+## Features To-Do
+
+- [ ] Reply to tweet when a giveaway is aborted (instead of removing the tweet)
+- [ ] Add % won on personal giveaway stats
 
 ---
 ## How to contribute (running code on host)
@@ -45,23 +54,6 @@ services:
 8. Push your branch to github and and create a [pull-request](https://github.com/Aiscargeauh/Flowerawaybot/pulls)
 
 ---
-
-## Steps to production (from old version to this public repo - september 2021)
-
-Note the server and bot tokens are private and maintained by Aiscargeauh#0954
-1. Do !updatedb on old bot
-2. Get giveaways_converted.json from the old bot
-3. Stop the old bot
-4. Update token in docker-compose.yaml
-5. Set environment to "Prod" in config.yaml
-6. docker-compose up -d
-7. Check manually for invalid data in giveaways_converted.json
-8. Update giveaways.json to the giveaways_converted.json
-9. Restart the new bot
-10. All rolling! !giveaway stats should be interesting
-
----
-
 ## Changelog 
 
 ### Big update in september 2021, first changelog:

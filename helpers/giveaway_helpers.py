@@ -233,9 +233,12 @@ async def get_winners_text(context, winners):
     counter = 0
     for winner, winning_count in winners.items():
         if counter < 5:
-            winner_obj = await context.bot.fetch_user(winner)
-            winners_text += f"{winner_obj.mention} has won {winning_count} times\n"
-            counter += 1
+            try:
+                winner_obj = await context.bot.fetch_user(winner)
+                winners_text += f"{winner_obj.mention} has won {winning_count} times\n"
+                counter += 1
+            except:
+                pass
     return winners_text
 
 async def get_authors_text(context, authors):
@@ -243,9 +246,12 @@ async def get_authors_text(context, authors):
     counter = 0
     for author, authored_count in authors.items():
         if counter < 5:
-            author_obj = await context.bot.fetch_user(author)
-            authors_text += f"{author_obj.mention} has created {authored_count} giveaways\n"
-            counter += 1
+            try:
+                author_obj = await context.bot.fetch_user(author)
+                authors_text += f"{author_obj.mention} has created {authored_count} giveaways\n"
+                counter += 1
+            except:
+                pass
     return authors_text
 
 def get_emojis_text(emojis):
