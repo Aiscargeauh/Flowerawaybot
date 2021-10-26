@@ -9,6 +9,11 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
 
 - [ ] Reply to tweet when a giveaway is aborted (instead of removing the tweet)
 - [ ] Add % won on personal giveaway stats
+- [ ] Add a "since march 2021" on giveaway stats
+- [ ] Performance upgrade! !giveaway list is taking up to 20 seconds with load of giveaways
+- [ ] Take the correct reaction instead of the first one in !giveaway end
+- [ ] Add a :thumbsup: emoji when a message is being processed
+- [ ] Don't notify the author for giveaways when end_time is less than 15 minutes from now
 
 ---
 ## How to contribute (running code on host)

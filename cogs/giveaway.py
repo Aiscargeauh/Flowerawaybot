@@ -34,7 +34,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         """
 
         #Start typing
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
 
         #Parse arguments (sends embeds if errors)
         #Fast, as it's mostly string manipulation
@@ -84,7 +84,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         Ends your giveaway without drawing a winner. Also removing the tweet about it.
         **Usage:** !giveaway abort message_id
         """
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
 
         #Parse arguments (sends embeds if errors)
         #Fast, as it's mostly string manipulation
@@ -138,7 +138,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         Ends your giveaway, draw a winner!
         **Usage:** !giveaway end message_id
         """
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
         
         #Parse arguments (sends embeds if errors)
         #Fast, as it's mostly string manipulation
@@ -203,7 +203,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         Lists active giveaways.
         **Usage:** !giveaway list
         """
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
         
         #Get all ONGOING giveaways
         ongoing_giveaways = helpers.giveaway_database_helpers.get_ongoing_giveaways()
@@ -230,7 +230,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         General statistics about giveaways.
         **Usage:** !giveaway stats
         """
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
 
         #Check if it's for a specific user
         user_mentioned_list = context.message.mentions
@@ -261,7 +261,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         Rerolls a giveaway.
         **Usage:** !giveaway reroll message_id
         """
-        await context.message.channel.trigger_typing()
+        #await context.message.channel.trigger_typing()
 
         #Parse arguments (sends embeds if errors)
         #Fast, as it's mostly string manipulation
