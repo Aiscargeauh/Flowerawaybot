@@ -1,5 +1,4 @@
 aiohttp
-asyncio
 discord.py
 pyyaml
 tinydb

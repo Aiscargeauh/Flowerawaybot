@@ -34,6 +34,31 @@ def get_not_ongoing_giveaways():
     except:
         return None
 
+def get_participation_count(user_id):
+    giveaway_db.clear_cache()
+    giveaway_query = Query()
+    try:
+        list_of_giveaways = giveaway_db.search(giveaway_query["participants"].test(lambda x: user_id in x))
+        return len(list_of_giveaways)
+    except:
+        return None
+
+def get_favorite_emoji(user_id):
+    giveaway_db.clear_cache()
+    giveaway_query = Query()
+    try:
+        list_of_giveaways = giveaway_db.search(giveaway_query["author"] == user_id)
+        emojis = {}
+        for giveaway in list_of_giveaways:
+            if emojis.get(giveaway["reaction"]):
+                emojis[giveaway["reaction"]] += 1
+            else:
+                emojis[giveaway["reaction"]] = 1
+        emojis = dict(sorted(emojis.items(), key=lambda item: item[1], reverse=True))
+        return next(iter(emojis))
+    except:
+        return None
+
 def get_latest_list_message_id():
     list_message_tracker.clear_cache()
     return list_message_tracker.all()

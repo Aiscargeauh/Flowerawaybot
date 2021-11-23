@@ -211,14 +211,14 @@ async def print_user_stats_results(context, stats_results, user):
     emojis_text = get_user_emojis_text(stats_results["emojis"])
 
     embed.add_field(name=f"{user.display_name} has started **{stats_results['giving_count']}** giveaways", value=f"That is a total of **{stats_results['giving_rarity_count']} rarity** given away!\n{emojis_text}", inline=False)
-    embed.add_field(name=f"{user.display_name} has participated in **{stats_results['participation_count']}** giveaways", value=f"Winning **{stats_results['winning_count']} of them!**\nFor a total of **{stats_results['winning_rarity_count']} rarity** won", inline=False)
+    embed.add_field(name=f"{user.display_name} has participated in **{stats_results['participation_count']}** giveaways", value=f"Winning **{stats_results['winning_count']}** of them (**{'{0:.2f}'.format((stats_results['winning_count'] / stats_results['participation_count']) * 100)}%** won)!\nFor a total of **{stats_results['winning_rarity_count']} rarity** won", inline=False)
 
     await context.send(embed=embed)
     return
 
 async def print_stats_results(context, stats_results):
     embed = discord.Embed()
-    embed.add_field(name="Informations", value=f"A total of **{stats_results['total']} giveaways** have been made so far\nThat is **{stats_results['total_rarity']} rarity** given away\n **{stats_results['count_aborted']}** have been aborted, and **{stats_results['count_rerolled']}** have been rerolled")
+    embed.add_field(name="Informations", value=f"A total of **{stats_results['total']} giveaways** have been made so far\nThat is **{stats_results['total_rarity']} rarity** given away\n **{stats_results['count_aborted']}** have been aborted, and **{stats_results['count_rerolled']}** have been rerolled\n*Since June 2021*")
     winners_text = await get_winners_text(context, stats_results["winners"])
     authors_text = await get_authors_text(context, stats_results["authors"])
     emojis_text = get_emojis_text(stats_results["emojis"])
@@ -235,7 +235,8 @@ async def get_winners_text(context, winners):
         if counter < 5:
             try:
                 winner_obj = await context.bot.fetch_user(winner)
-                winners_text += f"{winner_obj.mention} has won {winning_count} times\n"
+                participation_count = giveaway_database_helpers.get_participation_count(winner_obj.id)
+                winners_text += f"{winner_obj.mention} has won **{winning_count}** times, participated in **{participation_count}** giveaways (**{'{0:.2f}'.format((winning_count / participation_count) * 100)}%** won)\n"
                 counter += 1
             except:
                 pass
@@ -248,7 +249,8 @@ async def get_authors_text(context, authors):
         if counter < 5:
             try:
                 author_obj = await context.bot.fetch_user(author)
-                authors_text += f"{author_obj.mention} has created {authored_count} giveaways\n"
+                favorite_emoji = giveaway_database_helpers.get_favorite_emoji(author_obj.id)
+                authors_text += f"{author_obj.mention} has created **{authored_count}** giveaways (favorite emoji: {favorite_emoji})\n"
                 counter += 1
             except:
                 pass
@@ -259,7 +261,7 @@ def get_emojis_text(emojis):
     counter = 0
     for emoji, emoji_count in emojis.items():
         if counter < 5:
-            emojis_text += f"{emoji} has been used {emoji_count} times\n"
+            emojis_text += f"{emoji} has been used **{emoji_count}** times\n"
             counter += 1
     return emojis_text
 
@@ -268,7 +270,7 @@ def get_user_emojis_text(emojis):
     counter = 0
     for emoji, emoji_count in emojis.items():
         if counter < 3:
-            emojis_text += f"Used {emoji} {emoji_count} times\n"
+            emojis_text += f"Used {emoji} **{emoji_count}** times\n"
             counter += 1
     return emojis_text
 

@@ -17,7 +17,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger = logging.getLogger("GiveawayLogger")
 
     # Here you can just add your own commands, you'll always need to provide "self" as first parameter.
-    @commands.group(name="giveaway", aliases=["giveaways", "giveway", "givaway", "giveways", "givaways"])
+    @commands.group(name="giveaway", aliases=["giveaways", "giveway", "givaway", "giveways", "givaways", "gieaway", "giveaay", "giveavay", "giveaays", "giveavays"])
     async def giveaway(self, context):
         """
         Shortcut for 'giveaway list'
@@ -34,34 +34,34 @@ class giveaway(commands.Cog, name="Giveaway"):
         """
 
         #Start typing
-        #await context.message.channel.trigger_typing()
+        async with context.typing():
 
-        #Parse arguments (sends embeds if errors)
-        #Fast, as it's mostly string manipulation
-        try:
-            self.logger.info(f"Getting args for !giveaway create: {context.message.content} by {context.message.author.display_name}")
-            args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.CREATE, context.message.content)
-        except Exception as e:
-            self.logger.error(f"Missing parameter(s) in !giveaway create")
-            return
+            #Parse arguments (sends embeds if errors)
+            #Fast, as it's mostly string manipulation
+            try:
+                self.logger.info(f"Getting args for !giveaway create: {context.message.content} by {context.message.author.display_name}")
+                args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.CREATE, context.message.content)
+            except Exception as e:
+                self.logger.error(f"Missing parameter(s) in !giveaway create")
+                return
 
-        #Send initial embed
-        #First response to the user
-        args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], "")
-        self.logger.info(f"Sent new giveaway embed")
+            #Send initial embed
+            #First response to the user
+            args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], "")
+            self.logger.info(f"Sent new giveaway embed")
 
-        #Add first reaction to the embedded message
-        await helpers.giveaway_helpers.react_to_message(context, args["message_id"], args["reaction"])
-        self.logger.info(f"Reacted to the new giveaway embed")
+            #Add first reaction to the embedded message
+            await helpers.giveaway_helpers.react_to_message(context, args["message_id"], args["reaction"])
+            self.logger.info(f"Reacted to the new giveaway embed")
 
-        #Tweet about the giveaway
-        #Slow (has to upload images and push tweet: 3 http requests)
-        args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
-        self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
+            #Tweet about the giveaway
+            #Slow (has to upload images and push tweet: 3 http requests)
+            args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
+            self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
 
-        #Update the previsously sent embed to add the twitter link
-        await helpers.giveaway_helpers.add_twitter_link_to_embed(context, args["message_id"], args["tweet_url"])
-        self.logger.info(f"Edited embed to show twitter link")
+            #Update the previsously sent embed to add the twitter link
+            await helpers.giveaway_helpers.add_twitter_link_to_embed(context, args["message_id"], args["tweet_url"])
+            self.logger.info(f"Edited embed to show twitter link")
 
         #Save discord message information for quick search when !abort or !end
         #TODO: Fallback if task failed, inform user a problem happened, ping @Aiscargeauh#0954
@@ -84,48 +84,48 @@ class giveaway(commands.Cog, name="Giveaway"):
         Ends your giveaway without drawing a winner. Also removing the tweet about it.
         **Usage:** !giveaway abort message_id
         """
-        #await context.message.channel.trigger_typing()
+        async with context.typing():
 
-        #Parse arguments (sends embeds if errors)
-        #Fast, as it's mostly string manipulation
-        try:
-            self.logger.info(f"Getting args for !giveaway abort: {context.message.content} by {context.message.author.display_name}")
-            args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.ABORT, context.message.content)
-        except Exception as e:
-            self.logger.error(f"Missing parameter(s) in !giveaway create")
-            return
+            #Parse arguments (sends embeds if errors)
+            #Fast, as it's mostly string manipulation
+            try:
+                self.logger.info(f"Getting args for !giveaway abort: {context.message.content} by {context.message.author.display_name}")
+                args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.ABORT, context.message.content)
+            except Exception as e:
+                self.logger.error(f"Missing parameter(s) in !giveaway create")
+                return
 
-        #Get the giveaway object
-        self.logger.info(f"Getting giveaway embed to abort it")
-        giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
-        if giveaway_object is None:
-            self.logger.error(f"Giveaway not found in DB!")
-            await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
-            return
+            #Get the giveaway object
+            self.logger.info(f"Getting giveaway embed to abort it")
+            giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
+            if giveaway_object is None:
+                self.logger.error(f"Giveaway not found in DB!")
+                await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
+                return
 
-        #Check if the user has the rights to do that
-        if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
-            self.logger.error(f"User {context.message.author.display_name} doesn't have the rights to abort")
-            await helpers.giveaway_helpers.error_user_is_not_authorized(context)
-            return
+            #Check if the user has the rights to do that
+            if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
+                self.logger.error(f"User {context.message.author.display_name} doesn't have the rights to abort")
+                await helpers.giveaway_helpers.error_user_is_not_authorized(context)
+                return
 
-        #Just check if the giveaway is still ongoing, before aborting it
-        if giveaway_object["status"] != "ONGOING":
-            await helpers.giveaway_helpers.error_giveaway_already_ended(context)
-            self.logger.error(f"Giveaway already does not have the ONGOING status")
-            return
+            #Just check if the giveaway is still ongoing, before aborting it
+            if giveaway_object["status"] != "ONGOING":
+                await helpers.giveaway_helpers.error_giveaway_already_ended(context)
+                self.logger.error(f"Giveaway already does not have the ONGOING status")
+                return
 
-        #Set it as aborted in database
-        helpers.giveaway_database_helpers.change_giveaway_status(args["message_id"], "ABORTED")
-        self.logger.info(f"Giveaway set as aborted in DB")
+            #Set it as aborted in database
+            helpers.giveaway_database_helpers.change_giveaway_status(args["message_id"], "ABORTED")
+            self.logger.info(f"Giveaway set as aborted in DB")
 
-        #Remove the tweet
-        await helpers.giveaway_twitter_helpers.remove_tweet(giveaway_object["tweet_id"])
-        self.logger.info(f"Removed tweet about it")
+            #Remove the tweet
+            await helpers.giveaway_twitter_helpers.remove_tweet(giveaway_object["tweet_id"])
+            self.logger.info(f"Removed tweet about it")
 
-        #Acknowledgement to the user
-        await helpers.giveaway_helpers.send_successfully_aborted_embed(context, giveaway_object["message_url"])
-        self.logger.info(f"Send notification that the giveaway has been aborted")
+            #Acknowledgement to the user
+            await helpers.giveaway_helpers.send_successfully_aborted_embed(context, giveaway_object["message_url"])
+            self.logger.info(f"Send notification that the giveaway has been aborted")
 
         #And lastly, update the original message
         await helpers.giveaway_helpers.update_original_message_when_aborted(context, args["message_id"])
@@ -138,54 +138,54 @@ class giveaway(commands.Cog, name="Giveaway"):
         Ends your giveaway, draw a winner!
         **Usage:** !giveaway end message_id
         """
-        #await context.message.channel.trigger_typing()
+        async with context.typing():
         
-        #Parse arguments (sends embeds if errors)
-        #Fast, as it's mostly string manipulation
-        try:
-            self.logger.info(f"Getting args for !giveaway end: {context.message.content} by {context.message.author.display_name}")
-            args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.END, context.message.content)
-        except Exception as e:
-            self.logger.error(f"Missing parameter(s) in !giveaway end")
-            return
+            #Parse arguments (sends embeds if errors)
+            #Fast, as it's mostly string manipulation
+            try:
+                self.logger.info(f"Getting args for !giveaway end: {context.message.content} by {context.message.author.display_name}")
+                args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.END, context.message.content)
+            except Exception as e:
+                self.logger.error(f"Missing parameter(s) in !giveaway end")
+                return
 
-        #Get the giveaway object
-        self.logger.info(f"Getting the giveaway object from DB")
-        giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
-        if giveaway_object is None:
-            self.logger.error(f"Cannot find giveaway in DB")
-            await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
-            return
+            #Get the giveaway object
+            self.logger.info(f"Getting the giveaway object from DB")
+            giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
+            if giveaway_object is None:
+                self.logger.error(f"Cannot find giveaway in DB")
+                await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
+                return
 
-        #Check if the user has the rights to do that
-        if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
-            self.logger.error(f"User does not have rights to end a giveaway")
-            await helpers.giveaway_helpers.error_user_is_not_authorized(context)
-            return
+            #Check if the user has the rights to do that
+            if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
+                self.logger.error(f"User does not have rights to end a giveaway")
+                await helpers.giveaway_helpers.error_user_is_not_authorized(context)
+                return
 
-        #Just check if the giveaway is still ongoing, before aborting it
-        if giveaway_object["status"] != "ONGOING":
-            self.logger.error(f"Giveaway is already ended")
-            await helpers.giveaway_helpers.error_giveaway_already_ended(context)
-            return
+            #Just check if the giveaway is still ongoing, before aborting it
+            if giveaway_object["status"] != "ONGOING":
+                self.logger.error(f"Giveaway is already ended")
+                await helpers.giveaway_helpers.error_giveaway_already_ended(context)
+                return
 
-        #Get a winner
-        winner, participants = await helpers.giveaway_helpers.pick_a_winner(context, giveaway_object["message_id"], giveaway_object["author"])
-        self.logger.info(f"Picked a winner: {winner} from {len(participants)} participants")
+            #Get a winner
+            winner, participants = await helpers.giveaway_helpers.pick_a_winner(context, giveaway_object["message_id"], giveaway_object["author"])
+            self.logger.info(f"Picked a winner: {winner} from {len(participants)} participants")
 
-        #If command before is sending errors, it also returns None
-        if winner is None:
-            return
+            #If command before is sending errors, it also returns None
+            if winner is None:
+                return
 
-        #Set giveaway as ended in database
-        helpers.giveaway_database_helpers.change_giveaway_status(args["message_id"], "ENDED")
+            #Set giveaway as ended in database
+            helpers.giveaway_database_helpers.change_giveaway_status(args["message_id"], "ENDED")
 
-        #Set winner in database
-        helpers.giveaway_database_helpers.change_giveaway_winner(args["message_id"], winner, participants)
-        self.logger.info(f"Changed status, winner and participants in DB")
+            #Set winner in database
+            helpers.giveaway_database_helpers.change_giveaway_winner(args["message_id"], winner, participants)
+            self.logger.info(f"Changed status, winner and participants in DB")
 
-        #Notify winner!
-        await helpers.giveaway_helpers.send_giveaway_end_embed(context, winner, giveaway_object["author"], len(participants), args["message_id"])
+            #Notify winner!
+            await helpers.giveaway_helpers.send_giveaway_end_embed(context, winner, giveaway_object["author"], len(participants), args["message_id"])
 
         #Update original message
         await helpers.giveaway_helpers.update_original_message_when_ended(context, args["message_id"], winner)
@@ -203,14 +203,14 @@ class giveaway(commands.Cog, name="Giveaway"):
         Lists active giveaways.
         **Usage:** !giveaway list
         """
-        #await context.message.channel.trigger_typing()
+        async with context.typing():
         
-        #Get all ONGOING giveaways
-        ongoing_giveaways = helpers.giveaway_database_helpers.get_ongoing_giveaways()
-        self.logger.info(f"Counted {len(ongoing_giveaways)} in DB")
+            #Get all ONGOING giveaways
+            ongoing_giveaways = helpers.giveaway_database_helpers.get_ongoing_giveaways()
+            self.logger.info(f"Counted {len(ongoing_giveaways)} in DB")
 
-        #Print new list
-        message_id = await helpers.giveaway_helpers.send_new_list_embed(context, ongoing_giveaways)
+            #Print new list
+            message_id = await helpers.giveaway_helpers.send_new_list_embed(context, ongoing_giveaways)
 
         #Remove old list
         await helpers.giveaway_helpers.remove_old_list_message(context)
@@ -230,21 +230,23 @@ class giveaway(commands.Cog, name="Giveaway"):
         General statistics about giveaways.
         **Usage:** !giveaway stats
         """
-        #await context.message.channel.trigger_typing()
-
         #Check if it's for a specific user
         user_mentioned_list = context.message.mentions
-        if len(user_mentioned_list) > 0:
-            self.logger.info(f"Starting stats for user {user_mentioned_list[0].display_name}")
-            selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
-            stats_results = giveaway_helpers.format_user_stats(selected_giveaways, user_mentioned_list[0].id)
-            await giveaway_helpers.print_user_stats_results(context, stats_results, user_mentioned_list[0])
-        else:
-            self.logger.info(f"Starting general stats")
-            selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
-            stats_results = giveaway_helpers.format_general_stats(selected_giveaways)
-            message_id = await giveaway_helpers.print_stats_results(context, stats_results)
-        
+        message_id = 0
+        async with context.typing():
+
+            if len(user_mentioned_list) > 0:
+                self.logger.info(f"Starting stats for user {user_mentioned_list[0].display_name}")
+                selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
+                stats_results = giveaway_helpers.format_user_stats(selected_giveaways, user_mentioned_list[0].id)
+                await giveaway_helpers.print_user_stats_results(context, stats_results, user_mentioned_list[0])
+            else:
+                self.logger.info(f"Starting general stats")
+                selected_giveaways = giveaway_database_helpers.get_not_ongoing_giveaways()
+                stats_results = giveaway_helpers.format_general_stats(selected_giveaways)
+                message_id = await giveaway_helpers.print_stats_results(context, stats_results)
+            
+        if len(user_mentioned_list) < 0:
             #Remove old list
             self.logger.info(f"Removing old stats message")
             await helpers.giveaway_helpers.remove_old_stats_message(context)
@@ -261,53 +263,53 @@ class giveaway(commands.Cog, name="Giveaway"):
         Rerolls a giveaway.
         **Usage:** !giveaway reroll message_id
         """
-        #await context.message.channel.trigger_typing()
+        async with context.typing():
 
-        #Parse arguments (sends embeds if errors)
-        #Fast, as it's mostly string manipulation
-        try:
-            self.logger.info(f"Getting args for !giveaway reroll: {context.message.content} by {context.message.author.display_name}")
-            args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.REROLL, context.message.content)
-        except Exception as e:
-            self.logger.error(f"Missing parameter(s) in !giveaway reroll")
-            return
+            #Parse arguments (sends embeds if errors)
+            #Fast, as it's mostly string manipulation
+            try:
+                self.logger.info(f"Getting args for !giveaway reroll: {context.message.content} by {context.message.author.display_name}")
+                args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.REROLL, context.message.content)
+            except Exception as e:
+                self.logger.error(f"Missing parameter(s) in !giveaway reroll")
+                return
 
-        #Get the giveaway object
-        giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
-        self.logger.info(f"Got the giveaway object")
-        if giveaway_object is None:
-            self.logger.error(f"Haven't found the giveaway in database")
-            await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
-            return
+            #Get the giveaway object
+            giveaway_object = helpers.giveaway_database_helpers.get_giveaway_by_message_id(args["message_id"])
+            self.logger.info(f"Got the giveaway object")
+            if giveaway_object is None:
+                self.logger.error(f"Haven't found the giveaway in database")
+                await helpers.giveaway_helpers.error_cannot_find_giveaway_in_database(context)
+                return
 
-        #Check if the user has the rights to do that
-        if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
-            self.logger.error(f"User does not have rights to reroll giveaway")
-            await helpers.giveaway_helpers.error_user_is_not_authorized(context)
-            return
+            #Check if the user has the rights to do that
+            if not helpers.giveaway_helpers.is_user_author_or_admin(context, giveaway_object["author"]):
+                self.logger.error(f"User does not have rights to reroll giveaway")
+                await helpers.giveaway_helpers.error_user_is_not_authorized(context)
+                return
 
-        #Just check if the giveaway is already ended, just to keep the database integrity correct
-        if giveaway_object["status"] != "ENDED":
-            self.logger.error(f"Giveaway should have been ended first")
-            await helpers.giveaway_helpers.error_giveaway_not_yet_ended(context, args["message_id"])
-            return
+            #Just check if the giveaway is already ended, just to keep the database integrity correct
+            if giveaway_object["status"] != "ENDED":
+                self.logger.error(f"Giveaway should have been ended first")
+                await helpers.giveaway_helpers.error_giveaway_not_yet_ended(context, args["message_id"])
+                return
 
-        #No need to pick_a_winner, just taking the giveaway_object["participants"] and make a random.choice on it it enough
-        users_were_in = giveaway_object["participants"]
-        try:
-            with open("config.yaml") as file:
-                config = yaml.load(file, Loader=yaml.FullLoader)
-            if config["environment"] != "Dev":
-                users_were_in.remove(giveaway_object["winner"])
-        except Exception:
-            pass
-        finally:
-            next_winner = random.choice(users_were_in)
-            self.logger.info(f"Chosen next winner: {next_winner}")
+            #No need to pick_a_winner, just taking the giveaway_object["participants"] and make a random.choice on it it enough
+            users_were_in = giveaway_object["participants"]
+            try:
+                with open("config.yaml") as file:
+                    config = yaml.load(file, Loader=yaml.FullLoader)
+                if config["environment"] != "Dev":
+                    users_were_in.remove(giveaway_object["winner"])
+            except Exception:
+                pass
+            finally:
+                next_winner = random.choice(users_were_in)
+                self.logger.info(f"Chosen next winner: {next_winner}")
 
-        #Notify second winner
-        await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, next_winner, giveaway_object["author"], len(users_were_in), args["message_id"])
-        self.logger.info(f"Notified users")
+            #Notify second winner
+            await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, next_winner, giveaway_object["author"], len(users_were_in), args["message_id"])
+            self.logger.info(f"Notified users")
 
         #Save it in DB
         helpers.giveaway_database_helpers.append_giveaway_reroll(args["message_id"], next_winner)

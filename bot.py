@@ -8,7 +8,8 @@ from logging.handlers import TimedRotatingFileHandler
 
 import discord
 import yaml
-from discord.ext import commands, tasks
+from discord.ext import commands
+from discord.ext import tasks
 from discord.ext.commands import Bot
 
 """	

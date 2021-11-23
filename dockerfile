@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster
+FROM gorialis/discord.py
 
 WORKDIR /app
 
@@ -13,4 +13,4 @@ COPY . .
 #ENV twitter_api_key=
 #ENV twitter_api_key_secret=
 
-CMD [ "python3", "-u", "bot.py"]
+CMD [ "python", "bot.py"]
