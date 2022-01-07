@@ -119,8 +119,8 @@ class general(commands.Cog, name="General"):
             )
             await context.send(embed=embed)
 
-    @commands.command(name="gas", aliases=["fees", "ethfees", "ethgas"])
-    async def gas(self, context):
+    @commands.command(name="ethgas", aliases=["ethereumgas", "etereumfees", "ethereumfee", "ethfees", "ethfee", "ethga", "etgas", "egas"])
+    async def ethgas(self, context):
         """
         Get the current price of a transaction on ethereum.
         """
@@ -132,7 +132,24 @@ class general(commands.Cog, name="General"):
             response = json.loads(response)
             embed = discord.Embed(
                 title=":information_source: Info",
-                description=f"**Gas price is:** \nAverage: **{response['average']/10} gwei.**\nFast: **{response['fast']/10} gwei.**\nFastest: **{response['fastest']/10} gwei.**"
+                description=f"**Ethereum gas price is:** \nAverage: **{response['average']/10} gwei.**\nFast: **{response['fast']/10} gwei.**\nFastest: **{response['fastest']/10} gwei.**"
+            )
+            await context.send(embed=embed)
+
+    @commands.command(name="polygas", aliases=["polygongas", "polygonfee", "polyfees", "polyfee", "polyga", "polgas", "pgas"])
+    async def polygas(self, context):
+        """
+        Get the current price of a transaction on ethereum.
+        """
+        url = "https://gasstation-mainnet.matic.network/"
+        # Async HTTP request
+        async with aiohttp.ClientSession() as session:
+            raw_response = await session.get(url)
+            response = await raw_response.text()
+            response = json.loads(response)
+            embed = discord.Embed(
+                title=":information_source: Info",
+                description=f"**Polygon gas price is:** \nSafe Low: **{response['safeLow']} gwei.**\nStandart: **{response['standard']} gwei.**\nFastest: **{response['fastest']} gwei.**"
             )
             await context.send(embed=embed)
 

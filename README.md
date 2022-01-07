@@ -15,6 +15,7 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
 - [x] Add a :thumbsup: emoji when a message is being processed <-- *went for trigger_typing v2*
 - [ ] Don't notify the author for giveaways when end_time is less than 15 minutes from now
 - [ ] Backup mechanism for the database
+- [x] Add polygon !gas command
 
 ---
 ## How to contribute (running code on host)
