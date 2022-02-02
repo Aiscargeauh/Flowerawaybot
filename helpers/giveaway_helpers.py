@@ -581,6 +581,10 @@ def determine_bot_or_author(user, author):
         return True
     return False
 
+async def wait_for_dm_reply(context):
+    msg = await context.bot.wait_for('message', check = lambda x: x.channel == context.message.author.dm_channel and x.author == context.message.author, timeout=300)
+    return msg
+
 async def pick_a_winner(context, message_id, author):
     giveaway_embed = await context.fetch_message(message_id)
     users_list = await giveaway_embed.reactions[0].users().flatten()
