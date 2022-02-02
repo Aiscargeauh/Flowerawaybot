@@ -50,18 +50,18 @@ class giveaway(commands.Cog, name="Giveaway"):
             args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], "")
             self.logger.info(f"Sent new giveaway embed")
 
-            #Add first reaction to the embedded message
-            await helpers.giveaway_helpers.react_to_message(context, args["message_id"], args["reaction"])
-            self.logger.info(f"Reacted to the new giveaway embed")
+        #Add first reaction to the embedded message
+        await helpers.giveaway_helpers.react_to_message(context, args["message_id"], args["reaction"])
+        self.logger.info(f"Reacted to the new giveaway embed")
 
-            #Tweet about the giveaway
-            #Slow (has to upload images and push tweet: 3 http requests)
-            args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
-            self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
+        #Tweet about the giveaway
+        #Slow (has to upload images and push tweet: 3 http requests)
+        args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
+        self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
 
-            #Update the previsously sent embed to add the twitter link
-            await helpers.giveaway_helpers.add_twitter_link_to_embed(context, args["message_id"], args["tweet_url"])
-            self.logger.info(f"Edited embed to show twitter link")
+        #Update the previsously sent embed to add the twitter link
+        await helpers.giveaway_helpers.add_twitter_link_to_embed(context, args["message_id"], args["tweet_url"])
+        self.logger.info(f"Edited embed to show twitter link")
 
         #Save discord message information for quick search when !abort or !end
         #TODO: Fallback if task failed, inform user a problem happened, ping @Aiscargeauh#0954
