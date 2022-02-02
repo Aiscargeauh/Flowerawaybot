@@ -52,7 +52,8 @@ async def send_new_giveaway_embed(context, author, flower_identifier, flower_rar
         embed.add_field(name='Twitter link', value=f"[click me]({tweet_url})", inline=False)
     else:
         embed.add_field(name='Twitter link', value="*No link yet...*", inline=False)
-    embed.set_image(url=flower_image_url)
+    image_redirection = requests.get(flower_image_url)
+    embed.set_image(url=image_redirection.url)
     embed.color = get_rarity_color(flower_rarity)
     embed_result = await context.send(embed=embed)
     return embed_result.id, embed_result.jump_url
@@ -532,10 +533,12 @@ def get_end_time(timedelta_input):
 
 def save_flower_png(flower_url, flower_identifier, bleed):
     if bleed:
-        image_stream = requests.get(flower_url + "?bleed=true", stream=True)
+        image_redirection = requests.get(flower_url + "?bleed=true")
+        image_stream = requests.get(image_redirection.url, stream=True)
         file_name = f"{flower_identifier}_bleeding.png"
     if not bleed:
-        image_stream = requests.get(flower_url, stream=True)
+        image_redirection = requests.get(flower_url)
+        image_stream = requests.get(image_redirection.url, stream=True)
         file_name = f"{flower_identifier}.png"
     if image_stream.status_code == 200:
         try:

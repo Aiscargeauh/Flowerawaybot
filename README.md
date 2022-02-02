@@ -11,7 +11,10 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
 - [ ] Performance upgrade! !giveaway list is taking up to 20 seconds with load of giveaways
   - [ ] Update time dynamically, not every minute
   - [ ] Don't ping the author for giveaways when end_time is less than 15 minutes from now
+- [ ] Fix error when image cannot load
 - [ ] Backup mechanism for the database
+- [ ] Fix "Flowerawaybot is typing..." without typing anything
+- [x] Fix images not loading - redirection problem
 - [x] Add % won on personal giveaway stats
 - [x] Add a "since march 2021" on giveaway stats
 - [x] Add a :thumbsup: emoji when a message is being processed <-- *went for trigger_typing v2*

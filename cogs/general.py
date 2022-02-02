@@ -119,6 +119,23 @@ class general(commands.Cog, name="General"):
             )
             await context.send(embed=embed)
 
+    @commands.command(name="matic", aliases=["polygon", "poly"])
+    async def matic(self, context):
+        """
+        Get the current price of ethereum.
+        """
+        url = "https://api.coingecko.com/api/v3/coins/matic-network?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
+        # Async HTTP request
+        async with aiohttp.ClientSession() as session:
+            raw_response = await session.get(url)
+            response = await raw_response.text()
+            response = json.loads(response)
+            embed = discord.Embed(
+                title=":information_source: Info",
+                description=f"Matic price is: **${response['market_data']['current_price']['usd']}**"
+            )
+            await context.send(embed=embed)
+
     @commands.command(name="ethgas", aliases=["ethereumgas", "etereumfees", "ethereumfee", "ethfees", "ethfee", "ethga", "etgas", "egas"])
     async def ethgas(self, context):
         """
@@ -149,7 +166,7 @@ class general(commands.Cog, name="General"):
             response = json.loads(response)
             embed = discord.Embed(
                 title=":information_source: Info",
-                description=f"**Polygon gas price is:** \nSafe Low: **{response['safeLow']} gwei.**\nStandart: **{response['standard']} gwei.**\nFastest: **{response['fastest']} gwei.**"
+                description=f"**Polygon gas price is:** \nSafe Low: **{response['safeLow']} gwei.**\nStandard: **{response['standard']} gwei.**\nFastest: **{response['fastest']} gwei.**"
             )
             await context.send(embed=embed)
 
