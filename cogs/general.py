@@ -105,7 +105,7 @@ class general(commands.Cog, name="General"):
     @commands.command(name="ethereum", aliases=["ether", "eth"])
     async def ethereum(self, context):
         """
-        Get the current price of ethereum.
+        Get the current price of ETH token.
         """
         url = "https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
         # Async HTTP request
@@ -122,7 +122,7 @@ class general(commands.Cog, name="General"):
     @commands.command(name="matic", aliases=["polygon", "poly"])
     async def matic(self, context):
         """
-        Get the current price of ethereum.
+        Get the current price of MATIC token.
         """
         url = "https://api.coingecko.com/api/v3/coins/matic-network?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false"
         # Async HTTP request
@@ -139,7 +139,7 @@ class general(commands.Cog, name="General"):
     @commands.command(name="ethgas", aliases=["ethereumgas", "etereumfees", "ethereumfee", "ethfees", "ethfee", "ethga", "etgas", "egas"])
     async def ethgas(self, context):
         """
-        Get the current price of a transaction on ethereum.
+        Get the current price of a transaction on Ethereum.
         """
         url = "https://ethgasstation.info/api/ethgasAPI.json?api-key=4d4c66901e500964d3b59110f3cfd771ca9b61c7f0f4811a6c274d3f60f8"
         # Async HTTP request
@@ -156,7 +156,7 @@ class general(commands.Cog, name="General"):
     @commands.command(name="polygas", aliases=["polygongas", "polygonfee", "polyfees", "polyfee", "polyga", "polgas", "pgas"])
     async def polygas(self, context):
         """
-        Get the current price of a transaction on ethereum.
+        Get the current price of a transaction on Polygon.
         """
         url = "https://gasstation-mainnet.matic.network/"
         # Async HTTP request

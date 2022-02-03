@@ -1,7 +1,7 @@
 blacklist:
 - 0
 bot_prefix: '!'
-bot_version: 1.0
+bot_version: 1.1
 environment: Dev
 owners:
 - 414834795076517889
