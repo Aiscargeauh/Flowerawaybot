@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import yaml
-from helpers import giveaway_database_helpers, giveaway_emojis_helpers, giveaway_helpers
+from helpers import giveaway_database_helpers, giveaway_emojis_helpers, giveaway_helpers, giveaway_twitter_helpers
 import random
 import re
 import datetime
@@ -52,7 +52,6 @@ class giveaway(commands.Cog, name="Giveaway"):
 
             # Send initial embed
             # First response to the user
-            args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], "")
             self.logger.info(f"Sent new giveaway embed")
 
         # Add first reaction to the embedded message
@@ -71,7 +70,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         # Save discord message information for quick search when !abort or !end
         # TODO: Fallback if task failed, inform user a problem happened, ping @Aiscargeauh#0954
         helpers.giveaway_database_helpers.save_new_giveaway(args["flower_identifier"], args["flower_rarity"], args["start_time"],
-                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"])
+                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], "")
         self.logger.info(f"saved everything in database")
 
         # Remove both images from server's disk
@@ -93,105 +92,88 @@ class giveaway(commands.Cog, name="Giveaway"):
         Lets start a new giveaway, but using redeemable this time!
         **Usage:** !giveaway redeemable
         """
-        # Start typing
+
         async with context.typing():
+            # Parse arguments (sends embeds if errors)
+            # Fast, as it's mostly string manipulation
+            try:
+                self.logger.info(
+                    f"Getting args for !giveaway redeemable: {context.message.content} by {context.message.author.display_name}")
+                args = await helpers.giveaway_helpers.parse_commands_arguments(context, self.bot.emojis, helpers.giveaway_helpers.CommandTypes.REDEEMABLE, context.message.content)
+            except Exception as e:
+                self.logger.error(
+                    f"Missing parameter(s) in !giveaway redeemable")
+                return
+
+            if not args:
+                return
+
+            self.logger.info(f"Args OK, asking for redeemable link")
             try:
                 if context.message.channel.type.name != "private":
-                    await context.message.author.send("Hey, I'm contacting you as you would like to give away a FLOWER using Redeemable")
-                    await context.message.reply("Sending you a DM for that")
+                    await context.message.reply("Got it! I'm sending you a direct message for the redeemable link...")
+                await context.message.author.send("May I ask you to send me the redeemable link?")
+                await context.message.author.send("You got 5 minutes before I time-out :wink:")
             except:
                 await context.message.reply("Sorry it looks like I cannot send you a direct message...")
                 return
 
-        # Get redeemable url
         try:
-            await context.message.author.send("First, please send me the redeemable link")
             msg = await giveaway_helpers.wait_for_dm_reply(context)
 
             # If regex says it's valid link:
             pattern = re.compile(
-                r"https://redeemable\.app\/r\/0x[\dabcdef]{64}")
+                r"https://redeemable\.app\/r\/0x[\dabcdef]{64}$")
             while not re.match(pattern, msg.content):
                 await context.message.author.send("URL looks invalid, try again?")
                 msg = await giveaway_helpers.wait_for_dm_reply(context)
-            # TODO: Get flower info when redeemable API is ready
-            redeemable_link = msg.content
-            await context.message.author.send("Looks like a valid redeemable URL!\nNow I should know in how much time should the giveaway end (examples: 30m, 1h, 3d)")
-
-            msg = await giveaway_helpers.wait_for_dm_reply(context)
-            while not giveaway_helpers.get_end_time(msg.content):
-                await context.message.author.send("It doesn't look valid to me, try again?\n*Examples: 30m, 1h, 3d*")
-                msg = await giveaway_helpers.wait_for_dm_reply(context)
-            end_time = giveaway_helpers.get_end_time(msg.content)
-            await context.message.author.send("Looks like a valid time delta!\nNow I should know which emoji to use, for participants")
-
-            msg = await giveaway_helpers.wait_for_dm_reply(context)
-            while not giveaway_emojis_helpers.check_emoji_valid(self.bot.emojis, msg.content):
-                await context.message.author.send("Emoji looks invalid, try again?")
-                msg = await giveaway_helpers.wait_for_dm_reply(context)
-            reaction = msg.content
-            await context.message.author.send("Looks like a valid emoji!\nNow, last question: should the giveaway be ended automatically?\nJust answer `y` or `n`")
-
-            msg = await giveaway_helpers.wait_for_dm_reply(context)
-            while ("y" not in msg.content or "n" not in msg.content):
-                if len(msg.content) != 1:
-                    await context.message.author.send("I didn't understand, please reply just with `y` or `n`.")
-                    msg = await giveaway_helpers.wait_for_dm_reply(context)
-                else:
-                    if "y" in msg.content:
-                        automatic_ending = True
-                        await context.message.author.send("Got it! It will end automatically, winner will receive the link in his DM")
-                        break
-                    elif "n" in msg.content:
-                        automatic_ending = False
-                        await context.message.author.send("Got it! You will have to end it with `!giveaway end` command when it's time, you will be notified.")
-                        break
-                    else:
-                        await context.message.author.send("I didn't understand, please reply just with `y` or `n`.")
-                        msg = await giveaway_helpers.wait_for_dm_reply(context)
-
-            await context.message.author.send("Everything's ready! I'm sending that to the #🎁user-giveaways channel")
-
-            # # TODO: Add flower_identifier, flower_rarity, flower_url here when pash finished his API
-            # message_id, message_url = await helpers.giveaway_helpers.send_new_giveaway_embed(context, context.message.author.id, args["flower_identifier"], args["flower_rarity"], giveaway_helpers.get_flower_image_url(args["flower_identifier"]), reaction, end_time, "")
-            # self.logger.info(f"Sent new giveaway embed")
-
-            # # Add first reaction to the embedded message
-            # await helpers.giveaway_helpers.react_to_message(context, message_id, reaction)
-            # self.logger.info(f"Reacted to the new giveaway embed")
-
-            # # Tweet about the giveaway
-            # # Slow (has to upload images and push tweet: 3 http requests)
-            # # TODO: add flower_identifier here
-            # tweet_url, tweet_id = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], end_time)
-            # self.logger.info(f"Tweeted about new giveaway: {tweet_url}")
-
-            # # Update the previsously sent embed to add the twitter link
-            # await helpers.giveaway_helpers.add_twitter_link_to_embed(context, message_id, tweet_url)
-            # self.logger.info(f"Edited embed to show twitter link")
-
-            # # Save discord message information for quick search when !abort or !end
-            # helpers.giveaway_database_helpers.save_new_giveaway(args["flower_identifier"], args["flower_rarity"], datetime.utcnow(),
-            #                                                     end_time, context.message.author.id, reaction, message_url, message_id, tweet_id)
-            # self.logger.info(f"saved everything in database")
-
-            # # Remove both images from server's disk
-            # # TODO: Change flower_identifier
-            # helpers.giveaway_helpers.remove_flower_png(
-            #     args["flower_identifier"], True)
-            # helpers.giveaway_helpers.remove_flower_png(
-            #     args["flower_identifier"], False)
-            # self.logger.info(f"Removed flower images from server")
-
-            # # Start thread to update the message itself with up to date "Ends in"
-            # asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(context, message_id, message_url, end_time, context.message.author.id))
-            # self.logger.info(f"Started task to update embed")
-
+            args["redeemable_link"] = msg.content
         except asyncio.TimeoutError:
-            await context.message.author.send('Timed out, trigger me again with `!giveaway redeemable` if you want to retry.')
+            await context.message.author.send('Timed out, please note you can use your {context.message.content} command directly in this channel.')
 
-        # finally:
-            # await context.message.author.send(msg.content)
+        # Check redeemable link validity
+        args["flower_identifier"] = await giveaway_helpers.parse_redeemable_link(context, args["redeemable_link"])
+        if not args["flower_identifier"]:
+            return
+
+        flower_data_url = giveaway_helpers.get_flower_data_url(
+            args["flower_identifier"])
+        args["flower_rarity"] = giveaway_helpers.get_flower_rarity(
+            flower_data_url)
+        if not args["flower_rarity"]:
+            await context.message.author.send("I've failed when getting the FLOWER rarity...\n")
+            return
+
+        await context.message.author.send("Looks like a valid redeemable URL!\n")
+        async with context.typing():
+            # Tweet about it
+            self.logger.info(f"Getting flower image")
+            image_url = helpers.giveaway_helpers.get_flower_image_url(
+                args["flower_identifier"])
+            if not helpers.giveaway_helpers.save_flower_png(image_url, args["flower_identifier"], False):
+                await helpers.giveaway_helpers.error_invalid_flower_url_image(context)
+                return
+            args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
+            self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
+            helpers.giveaway_helpers.remove_flower_png(
+                args["flower_identifier"], False)
+            self.logger.info(f"Removed flower images from server")
+
+        # Post in #user-giveaways
+        await context.message.author.send("Everything's ready, I'm sending that to the #🎁user-giveaways channel!\n")
+        args["flower_url"] = helpers.giveaway_helpers.get_flower_image_url(args["flower_identifier"])
+        args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], args["tweet_url"])
+        self.logger.info(f"Sent new giveaway embed")
+
+        # Add first reaction to the embedded message
+        await helpers.giveaway_helpers.react_to_message(context, args["message_id"], args["reaction"])
+        self.logger.info(f"Reacted to the new giveaway embed")
+
+        #Save in DB
+        # Save discord message information for quick search when !abort or !end
+        helpers.giveaway_database_helpers.save_new_giveaway(args["flower_identifier"], args["flower_rarity"], args["start_time"],
+                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], args["redeemable_link"])
+        self.logger.info(f"Saved everything in database, good to go")
 
         return
 
@@ -296,7 +278,7 @@ class giveaway(commands.Cog, name="Giveaway"):
                 return
 
             # Get a winner
-            winner, participants = await helpers.giveaway_helpers.pick_a_winner(context, giveaway_object["message_id"], giveaway_object["author"])
+            winner, participants = await helpers.giveaway_helpers.pick_a_winner(context, giveaway_object["message_id"], giveaway_object["author"], giveaway_object["reaction"])
             self.logger.info(
                 f"Picked a winner: {winner} from {len(participants)} participants")
 
