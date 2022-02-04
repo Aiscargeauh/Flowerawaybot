@@ -6,7 +6,7 @@ giveaway_db = TinyDB('DB/giveaways.json')
 list_message_tracker = TinyDB('DB/list_messages.json')
 stats_message_tracker = TinyDB('DB/stats_messages.json')
 
-def save_new_giveaway(flower_identifier, flower_rarity, start_time, end_time, author, reaction, message_url, message_id, tweet_id):
+def save_new_giveaway(flower_identifier, flower_rarity, start_time, end_time, author, reaction, message_url, message_id, tweet_id, redeemable_url):
     giveaway_data = {
         'status': "ONGOING",
         'flower_identifier': flower_identifier,
@@ -23,6 +23,8 @@ def save_new_giveaway(flower_identifier, flower_rarity, start_time, end_time, au
     }
     if tweet_id > 0:
         giveaway_data["tweet_id"] = tweet_id
+    if redeemable_url != "":
+        giveaway_data["redeemable_url"] = redeemable_url
     giveaway_db.clear_cache()
     giveaway_db.insert(giveaway_data)
 

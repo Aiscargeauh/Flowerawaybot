@@ -23,7 +23,7 @@ async def send_tweet(flower_identifier, end_time):
     tweet_text = f"A discord user is giving away https://flowerpatch.app/card/{flower_identifier}\nEnds in {displayable_end_time}!\nJoin @Flowerpatchgame on discord: https://discord.gg/flowerpatch to participate!\n @Nugbase #NFT #giveaway #FreeNFT #flowerpatch"
     try:
         tweet_static_image = tweepy_api.media_upload("giveaway_static.png")
-        tweet_flower_image = tweepy_api.media_upload(f"{flower_identifier}_bleeding.png")
+        tweet_flower_image = tweepy_api.media_upload(f"{flower_identifier}.png")
 
         tweet_result = tweepy_api.update_status(status=tweet_text, media_ids=[tweet_static_image.media_id, tweet_flower_image.media_id])
         
@@ -32,7 +32,7 @@ async def send_tweet(flower_identifier, end_time):
             tweepy_api.destroy_status(tweet_result.id)
         
         return tweet_result._json['entities']['urls'][1]['url'], tweet_result.id
-    except:
+    except Exception as e:
         return "", 0
 
 async def remove_tweet(tweet_id):
