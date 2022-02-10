@@ -122,8 +122,7 @@ async def send_giveaway_end_embed(context, winner, author, participants_count, m
     embed.set_footer(
         text=f'{participants_count} users were participating in this giveaway')
     result = await context.send(embed=embed)
-    await notify_giveaway_end_winner_author(context, result.id, author, winner)
-    return
+    return result.id
 
 
 async def notify_giveaway_end_winner_author(context, message_id, author, winner):
@@ -134,6 +133,12 @@ async def notify_giveaway_end_winner_author(context, message_id, author, winner)
     await giveaway_end_embed.reply(text_message)
     return
 
+async def notify_giveaway_end_redeemable_timemout(context, message_id, winner):
+    giveaway_end_embed = await context.fetch_message(message_id)
+    winner_obj = await context.bot.fetch_user(winner)
+    text_message = f"*{winner_obj.mention}, I will send you the redeemable link in 5 minutes if there is no reroll.*"
+    await giveaway_end_embed.reply(text_message)
+    return
 
 async def send_giveaway_reroll_embed(context, next_winner, author, participants_count, message_id):
     giveaway_original_embed = await context.fetch_message(message_id)
@@ -145,8 +150,7 @@ async def send_giveaway_reroll_embed(context, next_winner, author, participants_
     embed.set_footer(
         text=f'{participants_count} users were participating in this giveaway')
     result = await context.send(embed=embed)
-    await notify_giveaway_end_winner_author(context, result.id, author, next_winner)
-    return
+    return result.id
 
 
 async def send_new_list_embed(context, ongoing_giveaways):
@@ -368,17 +372,36 @@ def get_user_emojis_text(emojis):
 
 
 async def notify_user_giveaway_end(context, message_id, message_url, author):
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
     author_obj = await context.bot.fetch_user(author)
     embed = discord.Embed()
     embed.add_field(name=f"A giveaway should end soon...",
                     value=f"Hey {author_obj.mention}, [your giveaway]({message_url}) should end now!\nUse: !giveaway end {message_id}", inline=False)
-    embed_result = await context.send(embed=embed)
+    embed_result = await giveaway_channel.send(embed=embed)
     return embed_result.id
 
+async def notify_users_automatic_giveaway_end(context, message_url, author):
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    author_obj = await context.bot.fetch_user(author)
+    embed = discord.Embed()
+    embed.add_field(name=f"Ending a giveaway!",
+                    value=f"Hey {author_obj.mention}, [your giveaway]({message_url}) is about to end!", inline=False)
+    embed_result = await giveaway_channel.send(embed=embed)
+    return embed_result.id
 
 async def notify_user_giveaway_end_as_text(context, message_id, author):
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
     author_obj = await context.bot.fetch_user(author)
-    giveaway_end_embed = await context.fetch_message(message_id)
+    giveaway_end_embed = await giveaway_channel.fetch_message(message_id)
     text_message = f"*Notifying* {author_obj.mention}"
     await giveaway_end_embed.reply(text_message)
     return
@@ -490,7 +513,12 @@ async def update_original_message_when_rerolled(context, message_id, next_winner
 
 
 async def update_time_left_on_message(context, message_id, end_time):
-    old_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+
+    old_embed = await giveaway_channel.fetch_message(message_id)
     displayable_end_time = time_left_beautifier(end_time)
     old_embed.embeds[0].set_field_at(
         3, name="Time left", value=f"{displayable_end_time}", inline=False)
@@ -538,9 +566,10 @@ async def error_arguments_create(context):
 
 
 async def error_arguments_redeemable(context):
-    await send_error_embed(context, "There is a problem with your command", f"**Usage:** !giveaway redeemable timedelta emoji\n \
+    await send_error_embed(context, "There is a problem with your command", f"**Usage:** !giveaway redeemable timedelta emoji automatic\n \
                 **timedelta** is in how much time the giveaway ends, in minutes, hours or days.\nExamples: 30m, 6h, 5d.\n \
-                **emoji** is the emoji that people will use to participate.")
+                **emoji** is the emoji that people will use to participate.\n\
+                **automatic**: optional flag for ending the giveaway automatically, either 'y' on 'n', will be 'n' if flag is ommited.")
     return
 
 
@@ -825,13 +854,14 @@ async def parse_arguments_redeemable(context, context_emojis, args):
     #Arg[1] = redeemable
     # Arg[2] = time delta
     #Arg[3] = emoji
+    #Arg[4] = Automatic flag
     # Create object later returned
     parsed_args = {}
     parsed_args["start_time"] = datetime.utcnow()
     parsed_args["author"] = context.message.author.id
 
     # Is there enough arguments
-    if len(splitted_args) != 4:
+    if len(splitted_args) != 4 and len(splitted_args) != 5:
         await error_arguments_redeemable(context)
         return None
 
@@ -846,6 +876,16 @@ async def parse_arguments_redeemable(context, context_emojis, args):
     if not giveaway_emojis_helpers.check_emoji_valid(context_emojis, parsed_args["reaction"]):
         await error_invalid_emoji(context)
         return None
+
+    # Arg[4] get automatic flag
+    if len(splitted_args) == 5:
+        if splitted_args[4] == "y":
+            parsed_args["automatic_end"] = True
+        elif splitted_args[4] == "n":
+            parsed_args["automatic_end"] = False
+    else:
+        parsed_args["automatic_end"] = False
+
     return parsed_args
 
 

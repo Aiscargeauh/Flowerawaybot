@@ -70,7 +70,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         # Save discord message information for quick search when !abort or !end
         # TODO: Fallback if task failed, inform user a problem happened, ping @Aiscargeauh#0954
         helpers.giveaway_database_helpers.save_new_giveaway(args["flower_identifier"], args["flower_rarity"], args["start_time"],
-                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], "")
+                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], "", False)
         self.logger.info(f"saved everything in database")
 
         # Remove both images from server's disk
@@ -154,14 +154,16 @@ class giveaway(commands.Cog, name="Giveaway"):
                 await helpers.giveaway_helpers.error_invalid_flower_url_image(context)
                 return
             args["tweet_url"], args["tweet_id"] = await helpers.giveaway_twitter_helpers.send_tweet(args["flower_identifier"], args["end_time"])
-            self.logger.info(f"Tweeted about new giveaway: {args['tweet_url']}")
+            self.logger.info(
+                f"Tweeted about new giveaway: {args['tweet_url']}")
             helpers.giveaway_helpers.remove_flower_png(
                 args["flower_identifier"], False)
             self.logger.info(f"Removed flower images from server")
 
         # Post in #user-giveaways
         await context.message.author.send("Everything's ready, I'm sending that to the #🎁user-giveaways channel!\n")
-        args["flower_url"] = helpers.giveaway_helpers.get_flower_image_url(args["flower_identifier"])
+        args["flower_url"] = helpers.giveaway_helpers.get_flower_image_url(
+            args["flower_identifier"])
         args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], args["tweet_url"])
         self.logger.info(f"Sent new giveaway embed")
 
@@ -172,9 +174,13 @@ class giveaway(commands.Cog, name="Giveaway"):
         #Save in DB
         # Save discord message information for quick search when !abort or !end
         helpers.giveaway_database_helpers.save_new_giveaway(args["flower_identifier"], args["flower_rarity"], args["start_time"],
-                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], args["redeemable_link"])
+                                                            args["end_time"], args["author"], args["reaction"], args["message_url"], args["message_id"], args["tweet_id"], args["redeemable_link"], args["automatic_end"])
         self.logger.info(f"Saved everything in database, good to go")
 
+        # Start thread to update the message itself with up to date "Ends in"
+        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(
+            context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
+        self.logger.info(f"Started task to update embed")
         return
 
     @giveaway.command(name="abort", aliases=["abrt", "abor"])
@@ -296,7 +302,13 @@ class giveaway(commands.Cog, name="Giveaway"):
             self.logger.info(f"Changed status, winner and participants in DB")
 
             # Notify winner!
-            await helpers.giveaway_helpers.send_giveaway_end_embed(context, winner, giveaway_object["author"], len(participants), args["message_id"])
+            message_id = await helpers.giveaway_helpers.send_giveaway_end_embed(context, winner, giveaway_object["author"], len(participants), args["message_id"])
+
+            if giveaway_object["redeemable_url"] != "":
+                await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, winner)
+                # Await 5 minutes, then send link
+            else:
+                await helpers.giveaway_helpers.notify_giveaway_end_winner_author(context, message_id, giveaway_object["author"], winner)
 
         # Update original message
         await helpers.giveaway_helpers.update_original_message_when_ended(context, args["message_id"], winner)
@@ -305,6 +317,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         # Update tweet
         await helpers.giveaway_twitter_helpers.update_tweet_giveaway_ended(giveaway_object["tweet_id"])
         self.logger.info(f"Successfully updated the tweet")
+
         return
 
     def filter_active(self, a): return a == ""
@@ -416,7 +429,7 @@ class giveaway(commands.Cog, name="Giveaway"):
                 await helpers.giveaway_helpers.error_giveaway_not_yet_ended(context, args["message_id"])
                 return
 
-            # No need to pick_a_winner, just taking the giveaway_object["participants"] and make a random.choice on it it enough
+            # No need to pick_a_winner, just taking the giveaway_object["participants"] and make a random.choice on it is enough
             users_were_in = giveaway_object["participants"]
             try:
                 with open("config.yaml") as file:
@@ -430,7 +443,12 @@ class giveaway(commands.Cog, name="Giveaway"):
                 self.logger.info(f"Chosen next winner: {next_winner}")
 
             # Notify second winner
-            await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, next_winner, giveaway_object["author"], len(users_were_in), args["message_id"])
+            message_id = await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, next_winner, giveaway_object["author"], len(users_were_in), args["message_id"])
+            if giveaway_object["redeemable_url"] != "":
+                await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, next_winner)
+                # Await 5 minutes, then send link
+            else:
+                await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, message_id, giveaway_object["author"], next_winner)
             self.logger.info(f"Notified users")
 
         # Save it in DB
@@ -458,7 +476,9 @@ class giveaway(commands.Cog, name="Giveaway"):
             "Try again when I finished my smoke break <:pepestoner:720807661745995877>",
             "Herbert said no! <:koalasad:755306633973727323>",
             "Sorry gaissa is already registered as future winner <:pepeultrasad:743232149632712805>",
-            "<:hidethepain:720807661918093402>"
+            "<:hidethepain:720807661918093402>",
+            "Maybe if you sent me SEEDs... :hotandspicy:",
+            "You will have to fight with Martin_dev to get it! :peepoEvil:"
         ]
         await context.message.reply(f"{random.choice(possibilities)}")
         self.logging.info("Sent a funny answer to !giveaway win")
