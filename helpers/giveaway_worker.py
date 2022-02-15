@@ -34,9 +34,9 @@ async def threaded_time_left_update(context, message_id, message_url, end_time, 
                 logger.info(f"End time has been met, notified author")
             else:
                 first_message_id = await helpers.giveaway_helpers.notify_users_automatic_giveaway_end(context, message_url, author)
-                await context.invoke(context.bot.get_command("giveaway"), query=f"end {message_id}")
-                logger.info(
-                    f"End time has been met, ended the giveaway automatically")
+                giveaway_end_command = context.bot.get_command('giveaway end')
+                await giveaway_end_command.callback(context, message_id)
+                logger.info(f"End time has been met, ended the giveaway automatically")
 
 
 async def threaded_list_time_left_update(context, list_message_id):

@@ -478,7 +478,12 @@ class giveaway(commands.Cog, name="Giveaway"):
             "Sorry gaissa is already registered as future winner <:pepeultrasad:743232149632712805>",
             "<:hidethepain:720807661918093402>",
             "Maybe if you sent me SEEDs... :hotandspicy:",
-            "You will have to fight with Martin_dev to get it! :peepoEvil:"
+            "You will have to fight with Martin_dev to get it! :peepoEvil:",
+            "Your Attack Level is too low for this weapon :knife:",
+            "Rigged mode: Engaged :peepoEvil:",
+            "lunars has claimed all rewards... better luck next time!",
+            "That only works when lunars is asleep... ssshhh let him fall asleep! :pepesleep:",
+            "Your Power Level isn't over 9000! :dragonball:"
         ]
         await context.message.reply(f"{random.choice(possibilities)}")
         self.logging.info("Sent a funny answer to !giveaway win")
