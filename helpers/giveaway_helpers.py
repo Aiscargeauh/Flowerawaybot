@@ -113,20 +113,27 @@ async def send_new_giveaway_embed(context, author, flower_identifier, flower_rar
 
 
 async def send_giveaway_end_embed(context, winner, author, participants_count, message_id):
-    giveaway_original_embed = await context.fetch_message(message_id)
-    embed = discord.Embed(title="Giveaway ended!",
-                          url=f"{giveaway_original_embed.jump_url}")
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    giveaway_original_embed = await giveaway_channel.fetch_message(message_id)
+    embed = discord.Embed(title="Giveaway ended!", url=f"{giveaway_original_embed.jump_url}")
     winner_obj = await context.bot.fetch_user(winner)
     embed.add_field(name=':drum: Winner is... :drum: ',
                     value=f"{winner_obj.mention}!", inline=False)
     embed.set_footer(
         text=f'{participants_count} users were participating in this giveaway')
-    result = await context.send(embed=embed)
+    result = await giveaway_channel.send(embed=embed)
     return result.id
 
 
 async def notify_giveaway_end_winner_author(context, message_id, author, winner):
-    giveaway_end_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    giveaway_end_embed = await giveaway_channel.fetch_message(message_id)
     author_obj = await context.bot.fetch_user(author)
     winner_obj = await context.bot.fetch_user(winner)
     text_message = f"*Notifying {winner_obj.mention}: you should send your ethereum address to {author_obj.mention} to receive the FLOWER.*"
@@ -134,7 +141,11 @@ async def notify_giveaway_end_winner_author(context, message_id, author, winner)
     return
 
 async def notify_giveaway_end_redeemable_timemout(context, message_id, winner):
-    giveaway_end_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    giveaway_end_embed = await giveaway_channel.fetch_message(message_id)
     winner_obj = await context.bot.fetch_user(winner)
     text_message = f"*{winner_obj.mention}, I will send you the redeemable link in 5 minutes if there is no reroll.*"
     await giveaway_end_embed.reply(text_message)
@@ -491,7 +502,11 @@ async def update_original_message_when_aborted(context, message_id):
 
 
 async def update_original_message_when_ended(context, message_id, winner):
-    old_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    old_embed = await giveaway_channel.fetch_message(message_id)
     winner_obj = await context.bot.fetch_user(winner)
     old_embed.embeds[0].set_field_at(
         3, name="Ends in", value=f"*Ended*", inline=False)
@@ -764,15 +779,26 @@ async def wait_for_dm_reply(context):
     msg = await context.bot.wait_for('message', check=lambda x: x.channel == context.message.author.dm_channel and x.author == context.message.author, timeout=300)
     return msg
 
+async def wait_for_reroll(context):
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    msg = await context.bot.wait_for('message', check=lambda x: x.channel == giveaway_channel, timeout=300)
+    
+    return msg
+
 
 async def pick_a_winner(context, message_id, author, reaction):
-    giveaway_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    giveaway_embed = await giveaway_channel.fetch_message(message_id)
     users_list = await giveaway_embed.reactions[0].users().flatten()
 
     filtered_list = [
         x for x in users_list if not determine_bot_or_author(x, author)]
-    with open("config.yaml") as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
     if len(filtered_list) == 0 and config["environment"] != "Dev":
         await error_noone_entered(context)
         return None

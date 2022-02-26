@@ -81,7 +81,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Removed flower images from server")
 
         # Start thread to update the message itself with up to date "Ends in"
-        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(
+        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self,
             context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
         self.logger.info(f"Started task to update embed")
         return
@@ -178,7 +178,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Saved everything in database, good to go")
 
         # Start thread to update the message itself with up to date "Ends in"
-        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(
+        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self, 
             context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
         self.logger.info(f"Started task to update embed")
         return
@@ -243,12 +243,13 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Updated original giveaway message")
         return
 
-    @giveaway.command(name="end", aliases=["nd"])
+    @giveaway.command(name="end", aliases=["nd"], pass_context=True)
     async def giveaway_end(self, context):
         """
         Ends your giveaway, draw a winner!
         **Usage:** !giveaway end message_id
         """
+        
         async with context.typing():
 
             # Parse arguments (sends embeds if errors)
@@ -306,7 +307,10 @@ class giveaway(commands.Cog, name="Giveaway"):
 
             if giveaway_object["redeemable_url"] != "":
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, winner)
-                # Await 5 minutes, then send link
+                # Await 5 minutes, then send link TODO
+                asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_reroll_redeemable(context))
+                self.logger.info(f"Started task to wait for rerolls")
+
             else:
                 await helpers.giveaway_helpers.notify_giveaway_end_winner_author(context, message_id, giveaway_object["author"], winner)
 

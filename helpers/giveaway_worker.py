@@ -6,6 +6,8 @@ import yaml
 import sys
 from time import time
 
+from helpers.giveaway_helpers import wait_for_reroll
+
 
 # Only if you want to use variables that are in the config.yaml file.
 if not os.path.isfile("config.yaml"):
@@ -14,7 +16,7 @@ else:
     with open("config.yaml") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
-async def threaded_time_left_update(context, message_id, message_url, end_time, author):
+async def threaded_time_left_update(self, context, message_id, message_url, end_time, author):
     end_time_met = False
     logger = logging.getLogger("GiveawayLogger")
     while not end_time_met:
@@ -35,7 +37,9 @@ async def threaded_time_left_update(context, message_id, message_url, end_time, 
             else:
                 first_message_id = await helpers.giveaway_helpers.notify_users_automatic_giveaway_end(context, message_url, author)
                 giveaway_end_command = context.bot.get_command('giveaway end')
-                await giveaway_end_command.callback(context, message_id)
+                customContext = context
+                customContext.message.content = f"!giveaway end {message_id}"
+                await giveaway_end_command.callback(self, customContext)
                 logger.info(f"End time has been met, ended the giveaway automatically")
 
 
@@ -55,3 +59,7 @@ async def threaded_list_time_left_update(context, list_message_id):
             logger.info(f"Updated time left on list message")
         else:
             return
+
+async def threaded_reroll_redeemable(context):
+    logger = logging.getLogger("GiveawayLogger")
+    await wait_for_reroll(context)

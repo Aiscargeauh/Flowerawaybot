@@ -145,3 +145,4 @@ docker-compose.yml
 docker-compose.yaml
 Logs/*
 .vscode/*
+Backups/*
