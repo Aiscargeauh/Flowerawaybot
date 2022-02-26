@@ -1,5 +1,4 @@
 aiohttp
-discord.py
 pyyaml
 tinydb
 python-dateutil

@@ -345,7 +345,7 @@ class giveaway(commands.Cog, name="Giveaway"):
             "Your Power Level isn't over 9000! <:dragonball:759883205007638561>"
         ]
         await context.message.reply(f"{random.choice(possibilities)}")
-        self.logging.info("Sent a funny answer to !giveaway win")
+        self.logger.info("Sent a funny answer to !giveaway win")
         return
     
     # Add listener for reactions, so the bot updates the latest !giveaway list message
