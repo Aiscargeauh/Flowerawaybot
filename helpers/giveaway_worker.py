@@ -6,7 +6,6 @@ import yaml
 import sys
 from time import time
 
-from helpers.giveaway_helpers import wait_for_reroll
 
 
 # Only if you want to use variables that are in the config.yaml file.
@@ -15,6 +14,7 @@ if not os.path.isfile("config.yaml"):
 else:
     with open("config.yaml") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
+
 
 async def threaded_time_left_update(self, context, message_id, message_url, end_time, author):
     end_time_met = False
@@ -40,7 +40,8 @@ async def threaded_time_left_update(self, context, message_id, message_url, end_
                 customContext = context
                 customContext.message.content = f"!giveaway end {message_id}"
                 await giveaway_end_command.callback(self, customContext)
-                logger.info(f"End time has been met, ended the giveaway automatically")
+                logger.info(
+                    f"End time has been met, ended the giveaway automatically")
 
 
 async def threaded_list_time_left_update(context, list_message_id):
@@ -60,6 +61,27 @@ async def threaded_list_time_left_update(context, list_message_id):
         else:
             return
 
-async def threaded_reroll_redeemable(context):
+
+async def threaded_reroll_redeemable(context, message_id, redeemable_url, winner):
     logger = logging.getLogger("GiveawayLogger")
-    await wait_for_reroll(context)
+
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+
+    try:
+        msg = await context.bot.wait_for('message', check=lambda x: (x.channel == giveaway_channel and x.content == f"!giveaway reroll {message_id}"), timeout=300)
+    except asyncio.TimeoutError as e:
+        #Expected, send url to winner
+        logger.info("No reroll since 5 minutes, sending the url to the winner!")
+        winner_obj = await context.bot.fetch_user(winner)
+        await winner_obj.send(f"Hey! You recently won a FLOWER, congrats! <a:disco:948118631101915136>\nPlease follow this link to redeem it:\n{redeemable_url}")
+        return
+        
+    if msg.content == f"!giveaway reroll {message_id}":
+        #Rerolled automatically, picked up by the bot in another thread
+        logger.info("Giveaway has been rerolled before I had to send the url, waiting another 5 minutes")
+        return
+
+

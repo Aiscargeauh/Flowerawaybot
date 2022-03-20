@@ -82,7 +82,7 @@ class giveaway(commands.Cog, name="Giveaway"):
 
         # Start thread to update the message itself with up to date "Ends in"
         asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self,
-            context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
+                                                                                               context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
         self.logger.info(f"Started task to update embed")
         return
 
@@ -178,8 +178,8 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Saved everything in database, good to go")
 
         # Start thread to update the message itself with up to date "Ends in"
-        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self, 
-            context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
+        asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self,
+                                                                                               context, args["message_id"], args["message_url"], args["end_time"], args["author"]))
         self.logger.info(f"Started task to update embed")
         return
 
@@ -249,7 +249,7 @@ class giveaway(commands.Cog, name="Giveaway"):
         Ends your giveaway, draw a winner!
         **Usage:** !giveaway end message_id
         """
-        
+
         async with context.typing():
 
             # Parse arguments (sends embeds if errors)
@@ -307,8 +307,9 @@ class giveaway(commands.Cog, name="Giveaway"):
 
             if giveaway_object["redeemable_url"] != "":
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, winner)
-                # Await 5 minutes, then send link TODO
-                asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_reroll_redeemable(context))
+                # Await 5 minutes, then send link
+                asyncio.get_event_loop().create_task(
+                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], winner))
                 self.logger.info(f"Started task to wait for rerolls")
 
             else:
@@ -319,8 +320,11 @@ class giveaway(commands.Cog, name="Giveaway"):
         self.logger.info(f"Notified winner and updated original message")
 
         # Update tweet
-        await helpers.giveaway_twitter_helpers.update_tweet_giveaway_ended(giveaway_object["tweet_id"])
-        self.logger.info(f"Successfully updated the tweet")
+        with open("config.yaml") as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
+            if config["environment"] != "Dev":
+                await helpers.giveaway_twitter_helpers.update_tweet_giveaway_ended(giveaway_object["tweet_id"])
+                self.logger.info(f"Successfully updated the tweet")
 
         return
 
@@ -451,6 +455,9 @@ class giveaway(commands.Cog, name="Giveaway"):
             if giveaway_object["redeemable_url"] != "":
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, next_winner)
                 # Await 5 minutes, then send link
+                asyncio.get_event_loop().create_task(
+                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], next_winner))
+                self.logger.info(f"Started task to wait for rerolls")
             else:
                 await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, message_id, giveaway_object["author"], next_winner)
             self.logger.info(f"Notified users")

@@ -88,7 +88,10 @@ async def status_task():
         '"I was going to do a giveaway, but gaissa won before I even announced it :pepewat:" - Achaean',
         "Foxtrot Lima Oscar Whiskey Echo Romeo Papa Alpha Tango Charlie Hotel",
         "[flɑʊəpætʃ]"]
-    await bot.change_presence(activity=discord.Game(random.choice(statuses)))
+    try:
+        await bot.change_presence(activity=discord.Game(random.choice(statuses)))
+    except Exception as e:
+        logger.info(f"Exception in status_task(): {e}")
 
 # Create log file
 create_rotating_log()

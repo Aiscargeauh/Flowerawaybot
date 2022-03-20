@@ -22,14 +22,14 @@ async def send_tweet(flower_identifier, end_time):
     displayable_end_time = humanize.naturaltime(datetime.utcnow() - end_time)
     tweet_text = f"A discord user is giving away https://flowerpatch.app/card/{flower_identifier}\nEnds in {displayable_end_time}!\nJoin @Flowerpatchgame on discord: https://discord.gg/flowerpatch to participate!\n @Nugbase #NFT #giveaway #FreeNFT #flowerpatch"
     try:
+        #Remove tweet ASAP if working in dev environment
+        if config["environment"] == "Dev":
+            return "", 0
+
         tweet_static_image = tweepy_api.media_upload("giveaway_static.png")
         tweet_flower_image = tweepy_api.media_upload(f"{flower_identifier}.png")
 
         tweet_result = tweepy_api.update_status(status=tweet_text, media_ids=[tweet_static_image.media_id, tweet_flower_image.media_id])
-        
-        #Remove tweet ASAP if working in dev environment
-        if config["environment"] == "Dev":
-            tweepy_api.destroy_status(tweet_result.id)
         
         return tweet_result._json['entities']['urls'][1]['url'], tweet_result.id
     except Exception as e:

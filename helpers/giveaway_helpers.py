@@ -542,7 +542,11 @@ async def update_time_left_on_message(context, message_id, end_time):
 
 
 async def update_time_left_on_list_message(context, message_id, ongoing_giveaways):
-    old_embed = await context.fetch_message(message_id)
+    if config["environment"] == "Dev":
+        giveaway_channel = context.bot.get_channel(850097611306303558)
+    elif config["environment"] == "Prod":
+        giveaway_channel = context.bot.get_channel(713882535964442745)
+    old_embed = await giveaway_channel.fetch_message(message_id)
 
     results = await asyncio.gather(*[get_giveaway_embed(context, giveaway) for giveaway in ongoing_giveaways])
     if old_embed != 0:
@@ -777,15 +781,6 @@ def determine_bot_or_author(user, author):
 
 async def wait_for_dm_reply(context):
     msg = await context.bot.wait_for('message', check=lambda x: x.channel == context.message.author.dm_channel and x.author == context.message.author, timeout=300)
-    return msg
-
-async def wait_for_reroll(context):
-    if config["environment"] == "Dev":
-        giveaway_channel = context.bot.get_channel(850097611306303558)
-    elif config["environment"] == "Prod":
-        giveaway_channel = context.bot.get_channel(713882535964442745)
-    msg = await context.bot.wait_for('message', check=lambda x: x.channel == giveaway_channel, timeout=300)
-    
     return msg
 
 
