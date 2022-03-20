@@ -488,16 +488,16 @@ class giveaway(commands.Cog, name="Giveaway"):
             "Herbert said no! <:koalasad:755306633973727323>",
             "Sorry gaissa is already registered as future winner <:pepeultrasad:743232149632712805>",
             "<:hidethepain:720807661918093402>",
-            "Maybe if you sent me SEEDs... :hotandspicy:",
-            "You will have to fight with Martin_dev to get it! :peepoEvil:",
+            "Maybe if you sent me SEEDs... <:hotandspicy:665580519337099275>",
+            "You will have to fight with Martin_dev to get it! <:peepoEvil:921570032864088135>",
             "Your Attack Level is too low for this weapon :knife:",
-            "Rigged mode: Engaged :peepoEvil:",
-            "lunars has claimed all rewards... better luck next time!",
-            "That only works when lunars is asleep... ssshhh let him fall asleep! :pepesleep:",
-            "Your Power Level isn't over 9000! :dragonball:"
+            "Rigged mode: Engaged <:peepoEvil:921570032864088135>",
+            "lunars has claimed all rewards... better luck next time! <:hotandspicy:665580519337099275>",
+            "That only works when lunars is asleep... ssshhh let him fall asleep! <:pepesleep:724740885195128872>",
+            "Your Power Level isn't over 9000! <:dragonball:759883205007638561>"
         ]
         await context.message.reply(f"{random.choice(possibilities)}")
-        self.logging.info("Sent a funny answer to !giveaway win")
+        self.logger.info("Sent a funny answer to !giveaway win")
         return
 
     # Add listener for reactions, so the bot updates the latest !giveaway list message
