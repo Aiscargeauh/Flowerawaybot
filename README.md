@@ -14,6 +14,7 @@ This discord bot is made for hosting giveaways on [Flowerpatch](flowerpatch.app)
 - [ ] Fix error when image cannot load
 - [ ] Backup mechanism for the database
 - [ ] Fix "Flowerawaybot is typing..." without typing anything
+- [x] `!giveaway redeemable` command
 - [x] Fix images not loading - redirection problem
 - [x] Add % won on personal giveaway stats
 - [x] Add a "since march 2021" on giveaway stats

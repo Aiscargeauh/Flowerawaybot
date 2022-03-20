@@ -88,7 +88,10 @@ async def status_task():
         '"I was going to do a giveaway, but gaissa won before I even announced it :pepewat:" - Achaean',
         "Foxtrot Lima Oscar Whiskey Echo Romeo Papa Alpha Tango Charlie Hotel",
         "[flɑʊəpætʃ]"]
-    await bot.change_presence(activity=discord.Game(random.choice(statuses)))
+    try:
+        await bot.change_presence(activity=discord.Game(random.choice(statuses)))
+    except Exception as e:
+        logger.info(f"Exception in status_task(): {e}")
 
 # Create log file
 create_rotating_log()
@@ -135,7 +138,7 @@ async def on_message(message):
 async def on_command_completion(ctx):
     fullCommandName = ctx.command.qualified_name
     logger = logging.getLogger("GiveawayLogger")
-    logger.info(f"Executed {fullCommandName} at {datetime.now()} command in {ctx.guild.name} (ID: {ctx.message.guild.id}) by {ctx.message.author} (ID: {ctx.message.author.id})")
+    logger.info(f"Executed {fullCommandName} command at {datetime.now()}, by {ctx.message.author.display_name} (ID: {ctx.message.author.id}))")
 
 
 # The code in this event is executed every time a valid commands catches an error
