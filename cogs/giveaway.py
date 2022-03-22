@@ -309,7 +309,7 @@ class giveaway(commands.Cog, name="Giveaway"):
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, winner)
                 # Await 5 minutes, then send link
                 asyncio.get_event_loop().create_task(
-                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], winner))
+                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], winner, giveaway_object["author"]))
                 self.logger.info(f"Started task to wait for rerolls")
 
             else:
@@ -456,7 +456,7 @@ class giveaway(commands.Cog, name="Giveaway"):
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, next_winner)
                 # Await 5 minutes, then send link
                 asyncio.get_event_loop().create_task(
-                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], next_winner))
+                    helpers.giveaway_worker.threaded_reroll_redeemable(context, giveaway_object["message_id"], giveaway_object["redeemable_url"], next_winner, giveaway_object["author"]))
                 self.logger.info(f"Started task to wait for rerolls")
             else:
                 await helpers.giveaway_helpers.send_giveaway_reroll_embed(context, message_id, giveaway_object["author"], next_winner)

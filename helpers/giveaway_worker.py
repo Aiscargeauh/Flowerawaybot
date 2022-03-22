@@ -5,6 +5,7 @@ import os
 import yaml
 import sys
 from time import time
+from discord import errors
 
 
 
@@ -62,7 +63,7 @@ async def threaded_list_time_left_update(context, list_message_id):
             return
 
 
-async def threaded_reroll_redeemable(context, message_id, redeemable_url, winner):
+async def threaded_reroll_redeemable(context, message_id, redeemable_url, winner, author):
     logger = logging.getLogger("GiveawayLogger")
 
     if config["environment"] == "Dev":
@@ -76,7 +77,13 @@ async def threaded_reroll_redeemable(context, message_id, redeemable_url, winner
         #Expected, send url to winner
         logger.info("No reroll since 5 minutes, sending the url to the winner!")
         winner_obj = await context.bot.fetch_user(winner)
-        await winner_obj.send(f"Hey! You recently won a FLOWER, congrats! <a:disco:948118631101915136>\nPlease follow this link to redeem it:\n{redeemable_url}")
+        try:
+            await winner_obj.send(f"Hey! You recently won a FLOWER, congrats! <a:disco:948118631101915136>\nPlease follow this link to redeem it:\n{redeemable_url}")
+            logger.info("URL sent to the winner!")
+        except errors.Forbidden as e:
+            logger.info("Winner has his DM closed, cannod send him the URL!")
+            author_obj = await context.bot.fetch_user(author)
+            await giveaway_channel.send(f"I'm sorry {winner_obj.mention}, I cannot send you your prize as you have your DM closed <:pepenervous:540465841238441984>\n Please see with {author_obj.mention} to claim your prize!")
         return
         
     if msg.content == f"!giveaway reroll {message_id}":
