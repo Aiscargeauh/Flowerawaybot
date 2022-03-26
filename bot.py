@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import os
 import platform
@@ -11,6 +12,8 @@ import yaml
 from discord.ext import commands
 from discord.ext import tasks
 from discord.ext.commands import Bot
+
+import helpers
 
 """	
 Setup bot intents (events restrictions)
@@ -98,6 +101,7 @@ create_rotating_log()
 # Removes the default help command of discord.py to be able to create our custom help command.
 bot.remove_command("help")
 
+
 if __name__ == "__main__":
     for file in os.listdir("./cogs"):
         if file.endswith(".py"):
@@ -109,7 +113,6 @@ if __name__ == "__main__":
             except Exception as e:
                 exception = f"{type(e).__name__}: {e}"
                 logger.info(f"Failed to load extension {extension}\n{exception}")
-
 
 # The code in this event is executed every time someone sends a message, with or without the prefix
 @bot.event

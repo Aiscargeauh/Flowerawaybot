@@ -1,8 +1,12 @@
+import asyncio
+from datetime import datetime
 import discord
 import yaml
 from discord.ext import commands
 from tinydb import TinyDB
 import logging
+
+import helpers
 
 # Load giveaway database
 giveaway_db = TinyDB('DB/giveaways.json')
@@ -29,6 +33,36 @@ class owner(commands.Cog, name="Owner"):
             await context.send(embed=embed)
             await self.bot.logout()
             await self.bot.close()
+        else:
+            embed = discord.Embed(
+                title="Error!",
+                description="You don't have the permission to use this command.",
+            )
+            await context.send(embed=embed)
+
+    @commands.command(name="startup")
+    async def startup(self, context):
+        """
+        Make the bot start threads
+        """
+        with open("config.yaml") as file:
+            config = yaml.load(file, Loader=yaml.FullLoader)
+        if context.message.author.id in config["owners"]:
+            
+            ongoing_giveaways = helpers.giveaway_database_helpers.get_ongoing_giveaways()
+    
+            #One for the list (if list message exists)
+            list_message_id = helpers.giveaway_database_helpers.get_latest_list_message_id()
+            asyncio.get_event_loop().create_task(
+                    helpers.giveaway_worker.threaded_list_time_left_update(context, list_message_id))
+            self.logger.info(f"Started task about updating time left in list")
+
+            for giveaway in ongoing_giveaways:
+                end_time = datetime.strptime(giveaway["end_time"], "%Y-%m-%d %H:%M:%S.%f")
+                asyncio.get_event_loop().create_task(helpers.giveaway_worker.threaded_time_left_update(self,
+                                                                                            context, giveaway["message_id"], giveaway["message_url"], end_time, giveaway["author"]))
+                self.logger.info(f"Started task giveaway {giveaway['flower_identifier']}")
+#2022-03-27 20:40:01.167703
         else:
             embed = discord.Embed(
                 title="Error!",
