@@ -51,6 +51,8 @@ class giveaway(commands.Cog, name="Giveaway"):
                 return
 
             # Send initial embed
+            args["message_id"], args["message_url"] = await helpers.giveaway_helpers.send_new_giveaway_embed(context, args["author"], args["flower_identifier"], args["flower_rarity"], args["flower_url"], args["reaction"], args["end_time"], "")
+
             # First response to the user
             self.logger.info(f"Sent new giveaway embed")
 
