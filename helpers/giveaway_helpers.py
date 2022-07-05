@@ -334,7 +334,7 @@ async def get_winners_text(context, winners):
     winners_text = ""
     counter = 0
     for winner, winning_count in winners.items():
-        if counter < 5:
+        if counter < 10:
             try:
                 winner_obj = await context.bot.fetch_user(winner)
                 participation_count = giveaway_database_helpers.get_participation_count(
@@ -350,7 +350,7 @@ async def get_authors_text(context, authors):
     authors_text = ""
     counter = 0
     for author, authored_count in authors.items():
-        if counter < 5:
+        if counter < 10:
             try:
                 author_obj = await context.bot.fetch_user(author)
                 favorite_emoji = giveaway_database_helpers.get_favorite_emoji(
@@ -366,7 +366,7 @@ def get_emojis_text(emojis):
     emojis_text = ""
     counter = 0
     for emoji, emoji_count in emojis.items():
-        if counter < 5:
+        if counter < 10:
             emojis_text += f"{emoji} has been used **{emoji_count}** times\n"
             counter += 1
     return emojis_text
@@ -376,7 +376,7 @@ def get_user_emojis_text(emojis):
     emojis_text = ""
     counter = 0
     for emoji, emoji_count in emojis.items():
-        if counter < 3:
+        if counter < 7:
             emojis_text += f"Used {emoji} **{emoji_count}** times\n"
             counter += 1
     return emojis_text

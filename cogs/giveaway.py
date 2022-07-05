@@ -307,7 +307,7 @@ class giveaway(commands.Cog, name="Giveaway"):
             # Notify winner!
             message_id = await helpers.giveaway_helpers.send_giveaway_end_embed(context, winner, giveaway_object["author"], len(participants), args["message_id"])
 
-            if giveaway_object["redeemable_url"] != "":
+            if "redeemable_url" in giveaway_object and giveaway_object["redeemable_url"] != "":
                 await helpers.giveaway_helpers.notify_giveaway_end_redeemable_timemout(context, message_id, winner)
                 # Await 5 minutes, then send link
                 asyncio.get_event_loop().create_task(
@@ -315,6 +315,7 @@ class giveaway(commands.Cog, name="Giveaway"):
                 self.logger.info(f"Started task to wait for rerolls")
 
             else:
+                #TODO: check why it's not passing there. Maybe check redeemable_url length?
                 await helpers.giveaway_helpers.notify_giveaway_end_winner_author(context, message_id, giveaway_object["author"], winner)
 
         # Update original message
