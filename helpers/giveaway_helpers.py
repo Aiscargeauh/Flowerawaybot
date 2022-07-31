@@ -932,6 +932,14 @@ async def parse_arguments_abort(context, args):
         else:
             await error_invalid_message_id(context)
             return None
+    elif len(possible_message_id) == 86 or len(possible_message_id) == 19:
+        if len(possible_message_id) == 86:
+            possible_message_id = possible_message_id[86-19:]
+        if possible_message_id.isnumeric():
+            parsed_args["message_id"] = possible_message_id
+        else:
+            await error_invalid_message_id(context)
+            return None
     else:
         await error_invalid_message_id(context)
         return None
