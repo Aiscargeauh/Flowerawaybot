@@ -1,3 +1,5 @@
+## I am archiving this repository as I do not have time to continue working on it. Feel free to fork or browse as you want.
+
 # Giveaway bot Flowerpatch
 
 
